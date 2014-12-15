@@ -1,0 +1,124 @@
+import groovy.xml.XmlUtil
+
+description = 'Distribution of Silverpeas. Its goal is to manage the installation, the configuration and the execution of Silverpeas'
+group = 'org.silverpeas'
+version = '6.0-SNAPSHOT'
+
+apply plugin: 'maven'
+
+configurations {
+  all {
+    resolutionStrategy {
+      cacheDynamicVersionsFor 0, 'seconds'
+      cacheChangingModulesFor 0, 'seconds'
+    }
+  }
+  silverpeas {
+    description = 'Silverpeas Modules'
+    transitive = true
+  }
+}
+
+repositories {
+  maven {
+    url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
+  }
+  mavenLocal()
+}
+
+dependencies {
+  silverpeas "org.silverpeas:silverpeas-assembly:${project.version}"
+}
+
+project.ext {
+  jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
+  distDir = new File('dist', buildDir)
+  homeDir = new File('home', buildDir)
+  silverpeasHome = System.getenv('SILVERPEAS_HOME')
+  jbossHome = System.getenv('JBOSS_HOME')
+  jbossExecutionMode = 'standalone'
+}
+
+assemble {
+  outputs.dir distDir
+  outputs.dir homeDir
+  outputs.file file(new File('silverpeas.war', buildDir))
+  doFirst {
+    // fetch all the artifacts and explode some of them into the output directories
+    def artifacts = configurations.silverpeas.files
+    artifacts.each { a ->
+      if (a.name.endsWith('.war')) {
+        copy {
+          from(zipTree(a)) {
+            rename 'web.xml', "web-${a.name}.xml"
+          }
+          into distDir.path
+        }
+      } else if (a.name.endsWith('-configuration.jar')) {
+        copy {
+          from(zipTree(a))
+          exclude '**/META-INF/**'
+          into homeDir.path
+        }
+      }
+    }
+    ant.get(src: jackrabbitJCAUri, dest: buildDir.path)
+  }
+  doLast {
+    // merge all of the web.xml from the different WARs into a single one
+    def mainWebXmlFileName = "web-war-core-${project.version}.war.xml"
+    def mainWebXmlFile = new File("${distDir.path}/WEB-INF/${mainWebXmlFileName}")
+    def mainWebXml = new XmlSlurper(false, false).parse(mainWebXmlFile)
+    new File('WEB-INF', distDir).listFiles(new FilenameFilter() {
+      boolean accept(File f, String fileName) {
+        return fileName.startsWith('web-') && fileName.endsWith('war.xml') &&
+            fileName != mainWebXmlFileName
+      }
+    }).each {
+      // the sub-elements of the web-app elements can be in the arbitrary order.
+      def aWebXml = new XmlSlurper(false, false).parse(it)
+      aWebXml.'context-param'.each { elt -> mainWebXml.appendNode(elt) }
+      aWebXml.'filter'.each { elt -> mainWebXml.appendNode(elt) }
+      aWebXml.'listener'.each { elt -> mainWebXml.appendNode(elt) }
+      aWebXml.'servlet'.each { elt -> mainWebXml.appendNode(elt) }
+      aWebXml.'servlet-mapping'.each { elt -> mainWebXml.appendNode(elt) }
+      aWebXml.'resource-env-ref'.each { elt -> mainWebXml.appendNode(elt) }
+      GFileUtils.forceDelete(it)
+    }
+    XmlUtil.serialize(mainWebXml, new FileWriter("${distDir.path}/WEB-INF/web.xml"))
+    GFileUtils.forceDelete(mainWebXmlFile)
+    ant.zip(destfile: "${buildDir.path}/silverpeas.war") {
+      fileset(dir: distDir.path)
+    }
+  }
+}
+
+task install(dependsOn: assemble) {
+  description 'Installs the Silverpeas application'
+  doFirst {
+    if (!silverpeasHome || !jbossHome) {
+      throw new StopExecutionException(detailMessage:
+          'The environment variables SILVERPEAS_HOME or JBOSS_HOME aren\'t set')
+    }
+    println "SILVERPEAS_HOME: ${silverpeasHome}"
+    println "JBOSS_HOME:      ${jbossHome}"
+  }
+  doLast {
+    copy {
+      from files(new File('silverpeas.war', buildDir), new File('jackrabbit-jca.rar', buildDir))
+      into "${jbossHome}/${jbossExecutionMode}/deployments"
+    }
+    copy {
+      from fileTree(homeDir)
+      into silverpeasHome
+    }
+  }
+}
+
+task configure(dependsOn: install) {
+  description 'Configures both Wildfly and Silverpeas'
+  doLast {
+    println 'configure wildfly to run Silverpeas and configure Silverpeas to run within the customer\'s environment context'
+  }
+}
+
