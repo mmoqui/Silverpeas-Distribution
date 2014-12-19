@@ -1,0 +1,5 @@
+#
+# Add SILVERPEAS_DATA_WEB as a new deployments location for JBoss
+#
+
+/subsystem=deployment-scanner/scanner=silverpeas-data-web:add(path=@SILVERPEAS_DATA_WEB@,auto-deploy-exploded=true)
