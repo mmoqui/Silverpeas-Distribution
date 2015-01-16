@@ -31,3 +31,10 @@ web-core/@ErrorDir@/
 /ejb-core/statistic/src/main/resources/META-INF/MANIFEST.MF
 /ejb-core/silverstatistics/src/main/resources/META-INF/MANIFEST.MF
 maven.out.log
+
+data
+dbRepository
+properties
+resources
+silvertrace
+xmlcomponents

@@ -1,10 +1,13 @@
 import groovy.xml.XmlUtil
+import org.silverpeas.setup.configuration.JBossServer
 
 description = 'Distribution of Silverpeas. Its goal is to manage the installation, the configuration and the execution of Silverpeas'
 group = 'org.silverpeas'
 version = '6.0-SNAPSHOT'
 
 apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'silverconf'
 
 configurations {
   all {
@@ -30,260 +33,32 @@ dependencies {
   silverpeas "org.silverpeas:silverpeas-assembly:${project.version}"
 }
 
+buildscript {
+  repositories {
+    maven {
+      url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
+    }
+    mavenLocal()
+  }
+  dependencies {
+    classpath "com.silverpeas.builder:configuration:5.15-SNAPSHOT"
+  }
+}
+
 project.ext {
   jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
   distDir = new File('dist', buildDir)
-  homeDir = new File('home', buildDir)
-  driversDir = new File('drivers', buildDir)
-  silverpeasHome = System.getenv('SILVERPEAS_HOME')
-  jbossHome = System.getenv('JBOSS_HOME')
-  jboss = new JBossServer(jbossHome).redirectOutputTo(new File("${silverpeasHome}/log/output.log"))
 }
 
-class JBossServer {
-
-  private String cli
-
-  private String starter
-
-  private String jbossHome
-
-  private File redirection = null
-
-  JBossServer(String jbossHome) {
-    this.jbossHome = jbossHome
-    if (System.getProperty('os.name').toLowerCase().indexOf('win') >= 0) {
-      this.cli = "${jbossHome}/bin/jboss-cli.bat"
-      this.starter = "${jbossHome}/bin/standalone.bat"
-    } else {
-      this.cli = "${jbossHome}/bin/jboss-cli.sh --connect"
-      this.starter = "${jbossHome}/bin/standalone.sh"
-    }
-  }
-
-  private void assertJBossIsRunning() {
-    if (!isRunning()) {
-      throw new AssertionError('JBoss not running')
-    }
-  }
-
-  private void assertCommandSucceeds(command) throws AssertionError, InvalidObjectException{
-    if (command.exitValue() != 0) {
-      String message = command.err.text
-      if (!message) {
-        throw new InvalidObjectException(command.in.text)
-      }
-      throw new AssertionError(message)
-    }
-  }
-
-  JBossServer redirectOutputTo(File log) {
-    this.redirection = log
-    return this
-  }
-
-  void start() {
-    if (!isRunning()) {
-      ProcessBuilder process =
-          new ProcessBuilder(starter, '-c', 'standalone-full.xml', '-b', '0.0.0.0')
-              .directory(new File(jbossHome))
-              .redirectErrorStream(true)
-      if (redirection != null) {
-        process.redirectOutput(redirection)
-      } else {
-        process.inheritIO()
-        System.println(process.redirectOutput())
-      }
-      process.start()
-      while (!isRunning()) {
-        sleep(1000);
-      }
-    } else {
-      println 'JBoss is already started'
-    }
-  }
-
-  void stop() {
-    def proc = """${cli} --command=:shutdown""".execute()
-    proc.waitFor()
-  }
-
-  boolean isRunning() {
-    def proc = """${cli} --command=:read-attribute(name=server-state)""".execute()
-    proc.waitFor()
-    return proc.exitValue() == 0 && proc.in.text.contains('"result" => "running"')
-  }
-
-  boolean isAlreadyConfigured() {
-    return new File("${jbossHome}/standalone/configuration/standalone-full.xml")
-        .text.contains('silverpeas')
-  }
-
-  void processCommandFile(File commandsFile) {
-    assertJBossIsRunning()
-    try {
-      println "${commandsFile.name} processing..."
-      def proc = """${cli} --file=${commandsFile.path}""".execute()
-      proc.waitFor()
-      assertCommandSucceeds(proc)
-      println "${commandsFile.name} processing: [OK]"
-    } catch(InvalidObjectException e) {
-      println "${commandsFile.name} processing: [WARNING]"
-      println e.message
-    } catch (AssertionError | Exception e) {
-      println "${commandsFile.name} processing: [FAILURE]"
-      println e.message
-    }
-  }
-}
-
-class SilverpeasConfiguration {
-
-  private def settings
-  private def availableDrivers
-  private def project
-  private final String configurationHome
-  private final String silverpeasDatasourceCli = 'silverpeas.ds.cli'
-  private def TokensReplacing = { line ->
-    def matching = line =~ /@(\w+)@/
-    matching.each { token ->
-      if (!settings[token[1]]) {
-        println "Error: no such property ${token[1]}"
-        throw new StopExecutionException()
-      }
-      line = line.replace(token[0], settings[token[1]])
-    }
-    return line
-  }
-
-  private enum ResourceType {
-    ra('resource adapter'),
-    ds('datasource'),
-    dl('deployment location'),
-    cli('subsystem')
-
-    private String type;
-
-    protected ResourceType(String type) {
-      this.type = type;
-    }
-
-    @Override
-    String toString() {
-      return type;
-    }
-  }
-
-  private def loadConfiguration(silverpeasHome) {
-    Properties properties = new Properties()
-    properties.load(new FileInputStream("${configurationHome}/default_config.properties"))
-    def customConfiguration = new File("${configurationHome}/config.properties")
-    if (customConfiguration.exists()) {
-      Properties customProperties = new Properties()
-      customProperties.load(customConfiguration.newReader())
-      customProperties.propertyNames().each {
-        properties[it] = customProperties[it]
-      }
-    }
-    return properties
-  }
-
-  private def listAvailableDrivers(driversDirPath) {
-    def drivers = [:]
-    new File(driversDirPath).listFiles().each { driver ->
-      // we don't take into account H2 as it is already provided by JBoss >= 8
-      if (driver.name.startsWith('postgresql')) {
-        drivers.POSTGRES = driver.name
-      } else if (driver.name.startsWith('jtds')) {
-        drivers.MSSQL = driver.name
-      } else if (driver.name.startsWith('ojdbc')) {
-        drivers.ORACLE = driver.name
-      }
-    }
-    return drivers
-  }
-
-  SilverpeasConfiguration(currentProject) {
-    if (!currentProject.silverpeasHome || !currentProject.jboss) {
-      throw new IllegalStateException('The project must define the following properties: ' +
-          'sivlerpeasHome (SILVERPEAS_HOME environment variable) and jboss (a JBossServer instance')
-    }
-    project = currentProject
-    configurationHome = "${project.silverpeasHome}/configuration"
-    settings = loadConfiguration(project.silverpeasHome)
-    settings.SILVERPEAS_HOME = project.silverpeasHome
-    availableDrivers = listAvailableDrivers("${project.buildDir}/drivers")
-  }
-
-  void setUpDatasource() {
-    println "Configure datasource for Silverpeas on ${settings.DB_SERVERTYPE}"
-    project.copy {
-      from "${project.buildDir}/drivers/${availableDrivers[settings.DB_SERVERTYPE]}"
-      into "${project.jbossHome}/standalone/deployments"
-    }
-    settings.DB_DRIVER = availableDrivers[settings.DB_SERVERTYPE]
-    switch (settings.DB_SERVERTYPE) {
-      case 'MSSQL':
-        settings.DB_URL = "jdbc:jtds:sqlserver://${settings.DB_SERVER}:${settings.DB_PORT_MSSQL}/${settings.DB_NAME}"
-        break
-      case 'ORACLE':
-        settings.DB_URL = "jdbc:oracle:thin:@${settings.DB_SERVER}:${settings.DB_PORT_ORACLE}:${settings.DB_NAME}"
-        break
-      case 'POSTGRES':
-        settings.DB_URL = "jdbc:postgresql://${settings.DB_SERVER}:${settings.DB_PORT_POSTGRES}/${settings.DB_NAME}"
-        break
-      case 'H2':
-        settings.DB_URL = "jdbc:h2:tcp://${settings.DB_SERVER}:${settings.DB_PORT_H2}/${settings.DB_NAME}"
-        break
-      default:
-        throw new IllegalArgumentException("Unsupported database system: ${settings.DB_SERVERTYPE}")
-    }
-    project.copy {
-      from ("${configurationHome}/jboss/${silverpeasDatasourceCli}") {
-        filter(TokensReplacing)
-      }
-      into "${project.buildDir}/cli"
-    }
-    project.jboss.processCommandFile(new File("${project.buildDir}/cli/${silverpeasDatasourceCli}"))
-    println()
-  }
-
-  void processConfigurationFiles() {
-    new File("${configurationHome}/jboss").listFiles(new FilenameFilter() {
-      @Override
-      boolean accept(final File dir, final String name) {
-        return name != silverpeasDatasourceCli
-      }
-    }).each { cli ->
-      String[] resource = cli.name.split('\\.')
-      ResourceType type = ResourceType.valueOf(resource[1])
-      println "Configure ${type} ${resource[0]} for Silverpeas"
-      project.copy {
-        from (cli) {
-          filter(TokensReplacing)
-        }
-        into "${project.buildDir}/cli"
-      }
-      project.jboss.processCommandFile(new File("${project.buildDir}/cli/${cli.name}"))
-      println()
-    }
-  }
-}
-
-def assertEnvironmentVariablesSetting() {
-  if (!silverpeasHome || !jbossHome) {
-    println 'The environment variables SILVERPEAS_HOME or JBOSS_HOME aren\'t set'
-    throw new StopExecutionException()
-  }
-  println "SILVERPEAS_HOME: ${silverpeasHome}"
-  println "JBOSS_HOME:      ${jbossHome}"
-  println()
+silverconf {
+  modulesDir = "${buildDir}/modules"
+  driversDir = "${buildDir}/drivers"
 }
 
 assemble {
   outputs.dir distDir
-  outputs.dir homeDir
-  outputs.dir driversDir
+  outputs.dir file(new File(project.silverconf.driversDir))
+  outputs.dir file(new File(project.silverconf.modulesDir))
   outputs.file file(new File('silverpeas.war', buildDir))
   doFirst {
     // fetch all the artifacts and explode some of them into the output directories
@@ -300,7 +75,7 @@ assemble {
         copy {
           from(zipTree(a))
           exclude '**/META-INF/**'
-          into homeDir.path
+          into project.silverconf.silverpeasHome
         }
       } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds')) {
         // h2 is already provided by JBoss >= 8
@@ -308,7 +83,7 @@ assemble {
           from(file(a)) {
             rename a.name, a.name.substring(0, a.name.indexOf('-')) + '.jar'
           }
-          into driversDir.path
+          into project.silverconf.driversDir
         }
       }
     }
@@ -343,49 +118,50 @@ assemble {
   }
 }
 
-task configure(dependsOn: assemble) {
+task configure(dependsOn: [configureJBoss, configureSilverpeas]) {
   description 'Configures both JBoss and Silverpeas'
   group 'Build'
-  outputs.upToDateWhen {
-    return jboss.isAlreadyConfigured()
-  }
-  doFirst {
-    assertEnvironmentVariablesSetting()
-    if (!jboss.isRunning()) {
-      println 'JBoss not started, so start it'
-      jboss.start()
-    }
-  }
   doLast {
-    def config = new SilverpeasConfiguration(project)
-    config.setUpDatasource()
-    config.processConfigurationFiles()
+    println 'CONFIGURATION COMPLETE'
   }
 }
 
-task install(dependsOn: configure) {
+task database(dependsOn: configureSilverpeas, type: JavaExec) {
+  description 'Install/Update the database used by Silverpeas'
+  group 'Build'
+  main = 'org.silverpeas.dbbuilder.DBBuilder'
+  classpath = buildscript.configurations.classpath
+  jvmArgs "-Dsilverpeas.home=${project.silverconf.silverpeasHome} -Ddbbuilder.home=${project.silverconf.silverpeasHome} -Ddbbuilder.data=${project.silverconf.silverpeasHome}/data"
+}
+
+task deploy(dependsOn: configure) {
   description 'Installs the Silverpeas application'
   group 'Build'
-  doFirst {
-    assertEnvironmentVariablesSetting()
-  }
   doLast {
     copy {
       from files(new File('silverpeas.war', buildDir), new File('jackrabbit-jca.rar', buildDir))
-      into "${jbossHome}/standalone/deployments"
-    }
-    copy {
-      from fileTree(homeDir)
-      into silverpeasHome
+      into "${project.silverconf.jbossHome}/standalone/deployments"
     }
   }
 }
 
 task start {
-  description 'Starts Silverpeas with JBoss'
+  description 'Starts Silverpeas'
   group 'Silverpeas'
   doLast {
-    jboss.start()
+    new JBossServer(project.silverconf.jbossHome)
+        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+        .start()
+  }
+}
+
+task debug {
+  description 'Starts Silverpeas in debug mode'
+  group 'Silverpeas'
+  doLast {
+    new JBossServer(project.silverconf.jbossHome)
+        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+        .debug()
   }
 }
 
@@ -393,7 +169,9 @@ task stop {
   description 'Stops Silverpeas'
   group 'Silverpeas'
   doLast {
-    jboss.stop()
+    new JBossServer(project.silverconf.jbossHome)
+        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+        .stop()
   }
 }
 
@@ -401,6 +179,7 @@ task status {
   description 'Checks the status of Silverpeas: is it running? is it well configured?'
   group 'Silverpeas'
   doLast {
+    def jboss = new JBossServer(project.silverconf.jbossHome)
     String configurationStatus = (jboss.isAlreadyConfigured() ? 'Configured: [OK]' : 'Configured: [NOK]')
     String executionStatus = (jboss.isRunning() ? 'Running:    [OK]' : 'Running:    [NOK]')
     println configurationStatus
@@ -412,7 +191,7 @@ task undeployAll(type: Delete) {
   description 'Undeploy all of the artefacts from the JBoss server (including Silverpeas)'
   group 'Silverpeas'
   doLast {
-    fileTree(dir: "${jbossHome}/standalone/deployments").exclude('README.txt').each {
+    fileTree(dir: "${project.silverconf.jbossHome}/standalone/deployments").exclude('README.txt').each {
       delete it
     }
   }

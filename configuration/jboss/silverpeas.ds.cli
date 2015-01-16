@@ -3,14 +3,14 @@
 #
 data-source add \
     --name=Silverpeas \
-    --driver-name=@DB_DRIVER@ \
-    --connection-url=@DB_URL@ \
+    --driver-name=${DB_DRIVER_NAME} \
+    --connection-url=${DB_URL} \
     --jndi-name=java:/datasources/silverpeas \
-    --user-name=@DB_USER@ \
-    --password=@DB_PASSWORD@ \
+    --user-name=${DB_USER} \
+    --password=${DB_PASSWORD} \
     --use-ccm=true \
-    --min-pool-size=@DB_MIN_POOL_SIZE@ \
-    --max-pool-size=@DB_MAX_POOL_SIZE@ \
-    --blocking-timeout-wait-millis=@DB_BLOCKING_TIMEOUT@ \
-    --idle-timeout-minutes=@DB_IDLE_TIMEOUT@
+    --min-pool-size=${DB_MIN_POOL_SIZE} \
+    --max-pool-size=${DB_MAX_POOL_SIZE} \
+    --blocking-timeout-wait-millis=${DB_BLOCKING_TIMEOUT} \
+    --idle-timeout-minutes=${DB_IDLE_TIMEOUT}
 
