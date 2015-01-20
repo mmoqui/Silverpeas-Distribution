@@ -26,14 +26,14 @@ class SilverpeasSetupExtension {
    */
   String configurationHome = "${silverpeasHome}/configuration"
   /**
-   * The path of the home directory of the database structure building scripts. It is expected to
+   * The path of the home directory of the datasource structure building scripts. It is expected to
    * contain two kinds of subdirectories:
    * <ul>
-   *   <li><code>data</code> containing a folder for each supported database system and in which an
-   *   XML setting file provide information on the SQL scripts to run for building the database;</li>
-   *   <li>a directory per supported database system into which a folder per Silverpeas components
-   *   gathers the SQL scripts tp build the database; these scripts are located in subdirectories
-   *   representing a given version of the database structure for the belonged component.</li>
+   *   <li><code>data</code> containing a folder for each supported datasource system and in which an
+   *   XML setting file provide information on the SQL scripts to run for building the datasource;</li>
+   *   <li>a directory per supported datasource system into which a folder per Silverpeas components
+   *   gathers the SQL scripts tp build the datasource; these scripts are located in subdirectories
+   *   representing a given version of the datasource structure for the belonged component.</li>
    * </ul>
    */
   String databaseHome = "${silverpeasHome}/dbRepository"

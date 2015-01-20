@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.silverpeas.setup.configuration.JBossConfigurationTask
 import org.silverpeas.setup.configuration.SilverpeasConfigurationTask
 import org.silverpeas.setup.configuration.VariableReplacement
+import org.silverpeas.setup.datasource.DataSourceProvider
 
 /**
  * This plugin aims to prepare the configuration and to setup Silverpeas.
@@ -26,6 +27,7 @@ class SilverpeasSetupPlugin implements Plugin<Project> {
 
     this.settings = loadConfiguration(project.silverconf.configurationHome)
     completeSettingsForProject(project)
+    DataSourceProvider.init(settings)
 
     project.task('configureJBoss', type: JBossConfigurationTask) {
       settings = this.settings
@@ -54,28 +56,31 @@ class SilverpeasSetupPlugin implements Plugin<Project> {
 
   private def completeSettingsForProject(Project project) {
     settings.SILVERPEAS_HOME = project.silverconf.silverpeasHome
-    if (settings.SILVERPEAS_LANGUAGES) {
-      settings.SILVERPEAS_DEFAULT_LANGUAGE = settings.SILVERPEAS_LANGUAGES.split(',')[0].trim()
-    } else {
-      settings.SILVERPEAS_LANGUAGES = 'fr'
-      settings.SILVERPEAS_DEFAULT_LANGUAGE = 'fr'
-    }
     switch (settings.DB_SERVERTYPE) {
       case 'MSSQL':
         settings.DB_URL = "jdbc:jtds:sqlserver://${settings.DB_SERVER}:${settings.DB_PORT_MSSQL}/${settings.DB_NAME}"
+        settings.DB_DRIVER = 'net.sourceforge.jtds.jdbc.Driver'
+        settings.JACKRABBIT_PERSISTENCE_MANAGER = 'org.apache.jackrabbit.core.persistence.pool.MSSqlPersistenceManager'
         break
       case 'ORACLE':
         settings.DB_URL = "jdbc:oracle:thin:@${settings.DB_SERVER}:${settings.DB_PORT_ORACLE}:${settings.DB_NAME}"
+        settings.DB_DRIVER = 'oracle.jdbc.driver.OracleDriver'
+        settings.JACKRABBIT_PERSISTENCE_MANAGER = 'org.apache.jackrabbit.core.persistence.pool.OraclePersistenceManager'
         break
-      case 'POSTGRES':
-        settings.DB_URL = "jdbc:postgresql://${settings.DB_SERVER}:${settings.DB_PORT_POSTGRES}/${settings.DB_NAME}"
+      case 'POSTGRESQL':
+        settings.DB_URL = "jdbc:postgresql://${settings.DB_SERVER}:${settings.DB_PORT_POSTGRESQL}/${settings.DB_NAME}"
+        settings.DB_DRIVER = 'org.postgresql.Driver'
+        settings.JACKRABBIT_PERSISTENCE_MANAGER = 'org.apache.jackrabbit.core.persistence.pool.PostgreSQLPersistenceManager'
         break
       case 'H2':
         settings.DB_URL = "jdbc:h2:tcp://${settings.DB_SERVER}:${settings.DB_PORT_H2}/${settings.DB_NAME}"
+        settings.DB_DRIVER = 'org.h2.Driver'
+        settings.JACKRABBIT_PERSISTENCE_MANAGER = 'org.apache.jackrabbit.core.persistence.pool.H2PersistenceManager'
         break
       default:
-        throw new IllegalArgumentException("Unsupported database system: ${settings.DB_SERVERTYPE}")
+        throw new IllegalArgumentException("Unsupported datasource system: ${settings.DB_SERVERTYPE}")
     }
+    settings.DB_SCHEMA = settings.DB_SERVERTYPE.toLowerCase()
   }
 
 }

@@ -2,6 +2,8 @@
 # Configure the Jackrabbit JCA to bootstrap a JCR repository for Silverpeas
 #
 
+/subsystem=jca/archive-validation=archive-validation:write-attribute(name=enabled, value=false)
+
 /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar:add(archive=jackrabbit-jca.rar,transaction-support=XATransaction)
 
 /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName:add(class-name=org.apache.jackrabbit.jca.JCAManagedConnectionFactory, \

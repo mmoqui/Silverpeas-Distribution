@@ -1,9 +1,7 @@
-package silverpeas
-
 import groovy.xml.XmlUtil
 
 /**
- * This script configures the different database XML configuration.
+ * This script configures the different datasource XML configuration.
  * @author mmoquillon
  */
 

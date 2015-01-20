@@ -363,18 +363,18 @@
   <!-- workflowEngine settings -->
   <!--
   <fileset root="${SILVERPEAS_HOME}/resources/instanceManager/">
-    <textfile name="database.xml">
+    <textfile name="datasource.xml">
       <parameter key="&lt;!DOCTYPE[^&gt;]*&gt;" use-regex="true"> </parameter>
     </textfile>
 
-    <xmlfile name="database.xml">
+    <xmlfile name="datasource.xml">
       <parameter key="/jdo-conf" mode="update">
         <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
       </parameter>
-      <parameter key="/jdo-conf/database" mode="update">
+      <parameter key="/jdo-conf/datasource" mode="update">
         <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
       </parameter>
-      <parameter key="/jdo-conf/database/mapping" mode="update">
+      <parameter key="/jdo-conf/datasource/mapping" mode="update">
         <value location="@href">file:///${SILVERPEAS_HOME}/resources/instanceManager/mapping.xml</value>
       </parameter>
     </xmlfile>
@@ -384,10 +384,10 @@
     </textfile>
 
     <xmlfile name="fast_database.xml">
-      <parameter key="/database" mode="update">
+      <parameter key="/datasource" mode="update">
         <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
       </parameter>
-      <parameter key="/database/mapping" mode="update">
+      <parameter key="/datasource/mapping" mode="update">
         <value location="@href">file:///${SILVERPEAS_HOME}/resources/instanceManager/fast_mapping.xml</value>
       </parameter>
     </xmlfile>

@@ -1,12 +1,14 @@
 package org.silverpeas.setup.configuration
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 /**
  * This task is to configure JBoss/Wildfly in order to be ready to run Silverpeas.
  * @author mmoquillon
  */
-class JBossConfigurationTask extends AbstractConfigurationTask {
+class JBossConfigurationTask extends DefaultTask {
+  def settings
   def jboss = new JBossServer("${project.silverconf.jbossHome}")
       .redirectOutputTo(new File("${project.silverconf.logDir}/output.log"))
 
@@ -21,7 +23,6 @@ class JBossConfigurationTask extends AbstractConfigurationTask {
 
   @TaskAction
   def configureJBoss() {
-    init()
     if (!jboss.isRunning()) {
       println 'JBoss not started, so start it'
       jboss.start()
@@ -36,7 +37,12 @@ class JBossConfigurationTask extends AbstractConfigurationTask {
     jboss.stop()
   }
 
+  private def setUpDriver() {
+
+  }
+
   private def installAdditionalModules() {
+    println 'Additional modules installation'
     project.copy {
       from "${project.silverconf.modulesDir}/jboss"
       into "${project.silverconf.jbossHome}/modules"
@@ -62,9 +68,20 @@ class JBossConfigurationTask extends AbstractConfigurationTask {
 
   private def setUpJDBCDriver() {
     println "Install datasource driver for ${settings.DB_SERVERTYPE}"
-    project.copy {
-      from "${project.silverconf.driversDir}/${settings.DB_DRIVER_NAME}"
-      into "${project.silverconf.jbossHome}/standalone/deployments"
+    new File(project.silverconf.driversDir).listFiles().each { driver ->
+      if ((driver.name.startsWith('postgresql') && settings.DB_SERVERTYPE == 'POSTGRESQL') ||
+          (driver.name.startsWith('jtds') && settings.DB_SERVERTYPE == 'MSSQL') ||
+          (driver.name.startsWith('ojdbc') && settings.DB_SERVERTYPE == 'ORACLE') ||
+          (driver.name.startsWith('h2') && settings.DB_SERVERTYPE == 'H2')) {
+        settings.DB_DRIVER_NAME = driver.name
+      }
+    }
+    // H2 is already available by default in JBoss/Wildfly
+    if (settings.DB_SERVERTYPE != 'H2') {
+      project.copy {
+        from "${project.silverconf.driversDir}/${settings.DB_DRIVER_NAME}"
+        into "${project.silverconf.jbossHome}/standalone/deployments"
+      }
     }
   }
 

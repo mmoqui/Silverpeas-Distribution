@@ -1,5 +1,6 @@
 package org.silverpeas.setup.configuration
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 
@@ -8,8 +9,9 @@ import org.gradle.api.tasks.TaskAction
  * configuration rules and from Groovy scripts.
  * @author mmoquillon
  */
-class SilverpeasConfigurationTask extends AbstractConfigurationTask {
+class SilverpeasConfigurationTask extends DefaultTask {
 
+  def settings
   private def scriptEngine
 
   SilverpeasConfigurationTask() {
@@ -20,7 +22,6 @@ class SilverpeasConfigurationTask extends AbstractConfigurationTask {
 
   @TaskAction
   def configureSilverpeas() {
-    init()
     scriptEngine = new GroovyScriptEngine(["${project.silverconf.configurationHome}/silverpeas"]
         as String[])
 

@@ -6,7 +6,6 @@ group = 'org.silverpeas'
 version = '6.0-SNAPSHOT'
 
 apply plugin: 'maven'
-apply plugin: 'java'
 apply plugin: 'silverconf'
 
 configurations {
@@ -33,25 +32,13 @@ dependencies {
   silverpeas "org.silverpeas:silverpeas-assembly:${project.version}"
 }
 
-buildscript {
-  repositories {
-    maven {
-      url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
-    }
-    mavenLocal()
-  }
-  dependencies {
-    classpath "com.silverpeas.builder:configuration:5.15-SNAPSHOT"
-  }
-}
-
 project.ext {
   jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
   distDir = new File('dist', buildDir)
 }
 
 silverconf {
-  modulesDir = "${buildDir}/modules"
+  modulesDir = "${silverconf.silverpeasHome}/modules"
   driversDir = "${buildDir}/drivers"
 }
 
@@ -126,13 +113,15 @@ task configure(dependsOn: [configureJBoss, configureSilverpeas]) {
   }
 }
 
+/*
 task database(dependsOn: configureSilverpeas, type: JavaExec) {
-  description 'Install/Update the database used by Silverpeas'
+  description 'Install/Update the datasource used by Silverpeas'
   group 'Build'
   main = 'org.silverpeas.dbbuilder.DBBuilder'
   classpath = buildscript.configurations.classpath
   jvmArgs "-Dsilverpeas.home=${project.silverconf.silverpeasHome} -Ddbbuilder.home=${project.silverconf.silverpeasHome} -Ddbbuilder.data=${project.silverconf.silverpeasHome}/data"
 }
+*/
 
 task deploy(dependsOn: configure) {
   description 'Installs the Silverpeas application'
