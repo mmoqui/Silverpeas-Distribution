@@ -1,20 +1,21 @@
 import groovy.xml.XmlUtil
 import org.silverpeas.setup.configuration.JBossServer
 
-description = 'Distribution of Silverpeas. Its goal is to manage the installation, the configuration and the execution of Silverpeas'
+description = 'Distribution of Silverpeas. Its aim is to setup and to execute a Silverpeas installation'
 group = 'org.silverpeas'
 version = '6.0-SNAPSHOT'
 
 apply plugin: 'maven'
-apply plugin: 'silverconf'
+apply plugin: 'silversetup'
 
 configurations {
+  /* necessary only when working with a SNAPSHOT version of this project
   all {
     resolutionStrategy {
       cacheDynamicVersionsFor 0, 'seconds'
       cacheChangingModulesFor 0, 'seconds'
     }
-  }
+  }*/
   silverpeas {
     description = 'Silverpeas Modules'
     transitive = true
@@ -32,20 +33,57 @@ dependencies {
   silverpeas "org.silverpeas:silverpeas-assembly:${project.version}"
 }
 
+buildscript {
+  dependencies {
+    classpath "org.silverpeas:silverpeas-setup:6.0-SNAPSHOT"
+  }
+  repositories {
+    maven {
+      url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
+    }
+    mavenLocal()
+  }
+}
+
+/**
+ * Global project properties.
+ */
 project.ext {
   jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
   distDir = new File('dist', buildDir)
 }
 
-silverconf {
-  modulesDir = "${silverconf.silverpeasHome}/modules"
+/**
+ * Some configuration properties corresponding to this distribution.
+ */
+silversetup {
   driversDir = "${buildDir}/drivers"
 }
 
+/**
+ * Cleans all the artifacts produced by the build of a Silverpeas distribution.
+ */
+clean {
+  doLast {
+    ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: '*.log')
+    ant.delete(dir: "${silversetup.silverpeasHome}/silvertrace", includeemptydirs: true)
+    ant.delete(dir: "${silversetup.silverpeasHome}/migrations", includeemptydirs: true)
+    ant.delete(dir: "${silversetup.silverpeasHome}/resources/StringTemplates", includeemptydirs: true)
+    ant.delete(dir: "${silversetup.silverpeasHome}/properties", includeemptydirs: true,
+        excludes: 'org/silverpeas/authentication/**/* org/silverpeas/domains/**/* org/silverpeas/util/viewGenerator/settings/**/*')
+    ant.delete(dir: "${silversetup.silverpeasHome}/xmlcomponents", includeemptydirs: true,
+        excludes: 'workflows/**/*')
+  }
+}
+
+/**
+ * Fetches the different parts of Silverpeas as well their dependencies from the remote Silverpeas
+ * repository and prepares the build of the Silverpeas distribution. It is in this step the
+ * Silverpeas application is assembled.
+ */
 assemble {
   outputs.dir distDir
-  outputs.dir file(new File(project.silverconf.driversDir))
-  outputs.dir file(new File(project.silverconf.modulesDir))
+  outputs.dir file(new File(project.silversetup.driversDir))
   outputs.file file(new File('silverpeas.war', buildDir))
   doFirst {
     // fetch all the artifacts and explode some of them into the output directories
@@ -62,7 +100,7 @@ assemble {
         copy {
           from(zipTree(a))
           exclude '**/META-INF/**'
-          into project.silverconf.silverpeasHome
+          into project.silversetup.silverpeasHome
         }
       } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds')) {
         // h2 is already provided by JBoss >= 8
@@ -70,7 +108,7 @@ assemble {
           from(file(a)) {
             rename a.name, a.name.substring(0, a.name.indexOf('-')) + '.jar'
           }
-          into project.silverconf.driversDir
+          into project.silversetup.driversDir
         }
       }
     }
@@ -105,6 +143,9 @@ assemble {
   }
 }
 
+/**
+ * Configures both the runtime (JBoss) and the Silverpeas distribution.
+ */
 task configure(dependsOn: [configureJBoss, configureSilverpeas]) {
   description 'Configures both JBoss and Silverpeas'
   group 'Build'
@@ -113,62 +154,82 @@ task configure(dependsOn: [configureJBoss, configureSilverpeas]) {
   }
 }
 
-/*
-task database(dependsOn: configureSilverpeas, type: JavaExec) {
-  description 'Install/Update the datasource used by Silverpeas'
-  group 'Build'
-  main = 'org.silverpeas.dbbuilder.DBBuilder'
-  classpath = buildscript.configurations.classpath
-  jvmArgs "-Dsilverpeas.home=${project.silverconf.silverpeasHome} -Ddbbuilder.home=${project.silverconf.silverpeasHome} -Ddbbuilder.data=${project.silverconf.silverpeasHome}/data"
-}
-*/
-
+/**
+ * Deploys Silverpeas and some of its dependencies into the application server.
+ */
 task deploy(dependsOn: configure) {
   description 'Installs the Silverpeas application'
-  group 'Build'
+  group 'Silverpeas'
   doLast {
     copy {
       from files(new File('silverpeas.war', buildDir), new File('jackrabbit-jca.rar', buildDir))
-      into "${project.silverconf.jbossHome}/standalone/deployments"
+      into "${project.silversetup.jbossHome}/standalone/deployments"
     }
   }
 }
 
+/**
+ * Undeploys Silverpeas and some of its dependencies from the application server.
+ */
+task undeploy(type: Delete) {
+  description 'Undeploy Silverpeas from the JBoss server (including Jackrabbit)'
+  group 'Silverpeas'
+  doLast {
+    fileTree(dir: "${project.silversetup.jbossHome}/standalone/deployments").filter {
+      it.name.startsWith('silverpeas.war') || it.name.startsWith('jackrabbit-jca.rar')
+    }.each {
+      delete it
+    }
+  }
+}
+
+/**
+ * Starts Silverpeas.
+ */
 task start {
   description 'Starts Silverpeas'
   group 'Silverpeas'
   doLast {
-    new JBossServer(project.silverconf.jbossHome)
-        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+    new JBossServer(project.silversetup.jbossHome)
+        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
         .start()
   }
 }
 
+/**
+ * Starts Silverpeas in debug mode.
+ */
 task debug {
   description 'Starts Silverpeas in debug mode'
   group 'Silverpeas'
   doLast {
-    new JBossServer(project.silverconf.jbossHome)
-        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+    new JBossServer(project.silversetup.jbossHome)
+        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
         .debug()
   }
 }
 
+/**
+ * Stops Silverpeas.
+ */
 task stop {
   description 'Stops Silverpeas'
   group 'Silverpeas'
   doLast {
-    new JBossServer(project.silverconf.jbossHome)
-        .redirectOutputTo(new File("${silverconf.logDir}/output.log"))
+    new JBossServer(project.silversetup.jbossHome)
+        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
         .stop()
   }
 }
 
+/**
+ * Checks the status of the Silverpeas distribution.
+ */
 task status {
   description 'Checks the status of Silverpeas: is it running? is it well configured?'
   group 'Silverpeas'
   doLast {
-    def jboss = new JBossServer(project.silverconf.jbossHome)
+    def jboss = new JBossServer(project.silversetup.jbossHome)
     String configurationStatus = (jboss.isAlreadyConfigured() ? 'Configured: [OK]' : 'Configured: [NOK]')
     String executionStatus = (jboss.isRunning() ? 'Running:    [OK]' : 'Running:    [NOK]')
     println configurationStatus
@@ -176,15 +237,6 @@ task status {
   }
 }
 
-task undeployAll(type: Delete) {
-  description 'Undeploy all of the artefacts from the JBoss server (including Silverpeas)'
-  group 'Silverpeas'
-  doLast {
-    fileTree(dir: "${project.silverconf.jbossHome}/standalone/deployments").exclude('README.txt').each {
-      delete it
-    }
-  }
-}
 
 
 
