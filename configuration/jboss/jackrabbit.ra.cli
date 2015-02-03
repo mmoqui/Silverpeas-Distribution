@@ -9,7 +9,7 @@
 /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName:add(class-name=org.apache.jackrabbit.jca.JCAManagedConnectionFactory, \
     jndi-name=java:/jca/jcr)
 
-/subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=ConfigFile/:add(value=${SILVERPEAS_HOME}/jcr/repository.xml)
+/subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=ConfigFile/:add(value=${JCR_HOME}/repository.xml)
 
-/subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=HomeDir/:add(value=${SILVERPEAS_HOME}/jcr)
+/subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=HomeDir/:add(value=${JCR_HOME})
 

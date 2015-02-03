@@ -22,3 +22,5 @@ silvertrace
 xmlcomponents
 jcr
 log
+deployments
+migrations
