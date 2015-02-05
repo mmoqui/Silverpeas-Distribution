@@ -1,6 +1,9 @@
 #
 # Add a non-XA datasource as the main persistence backend for Silverpeas
 #
+
+#check: /subsystem=datasources/data-source=DocumentStore
+
 data-source add \
     --name=DocumentStore \
     --driver-name=${DB_DRIVER_NAME} \

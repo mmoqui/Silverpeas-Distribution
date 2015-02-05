@@ -5,7 +5,7 @@ import groovy.xml.XmlUtil
  * @author mmoquillon
  */
 
-println 'Configure the workflow persistence engine'
+log.info 'Configure the workflow persistence engine'
 
 def workflowSettingsDir = "${settings.SILVERPEAS_HOME}/resources/instanceManager"
 def xmlSettingFiles = ['database.xml', 'fast_database.xml']

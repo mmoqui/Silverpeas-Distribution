@@ -10,7 +10,7 @@ import java.nio.file.Path
  * @author mmoquillon
  */
 
-println 'Configure the JCR repository'
+log.info 'Configure the JCR repository'
 
 Path jcrHomePath = Service.getPath(settings.JCR_HOME)
 Path jcrConfigurationPath = Service.getPath("${settings.JCR_HOME}/repository.xml")

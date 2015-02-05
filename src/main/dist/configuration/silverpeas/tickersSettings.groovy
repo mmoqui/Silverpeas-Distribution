@@ -7,13 +7,13 @@ import java.nio.file.Paths
  * @neysseric
  */
 
-println 'Generate the tickers from samples'
+log.info 'Generate the tickers from samples'
 Path tickerHome = Service.getPath("${settings.SILVERPEAS_DATA_HOME}/web/weblib.war/ticker")
 if (Files.exists(tickerHome) && Files.isDirectory(tickerHome)) {
   tickerHome.toFile().eachFileMatch(~/sample_.*/) {
     File aTicker = new File(it.name.replaceAll('sample_', ''), tickerHome.toFile())
     if (!aTicker.exists()) {
-      println "  ->  ${aTicker.name}"
+      log.info " -> ${aTicker.name}"
       Files.move(Paths.get(it.path), Paths.get(aTicker.path))
     }
   }
