@@ -1,45 +1,19 @@
 import groovy.xml.XmlUtil
-import org.silverpeas.setup.TaskEventLogging
 import org.silverpeas.setup.api.Logger
 import org.silverpeas.setup.configuration.JBossServer
 
 description = 'Distribution of Silverpeas. Its aim is to setup and to execute a Silverpeas installation'
 group = 'org.silverpeas'
-version = '${project.version}'
 
-LogLevel logLevel = LogLevel.INFO
-
+apply from: "${System.getenv('SILVERPEAS_HOME')}/bin/silverpeas.gradle"
 apply plugin: 'maven'
 apply plugin: 'silversetup'
-
-configurations {
-  silverpeas {
-    description = 'Silverpeas Modules'
-    transitive = true
-  }
-}
-
-/* Log onto a log file in SILVERPEAS_HOME/log */
-String timestamp = new Date().format('yyyyMMdd_HHmmss')
-File logDir = new File("${project.silversetup.silverpeasHome}/log")
-if (!logDir.exists()) {
-  logDir.mkdirs()
-}
-File logFile = new File("build-${timestamp}.log", logDir)
-Logger.init(logFile, logLevel)
-
-/* customize the traces writing both on the standard output and on the log file. */
-gradle.useLogger(new TaskEventLogging().withTasks(['assemble', 'configure', 'install']))
 
 repositories {
   maven {
     url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
   }
   mavenLocal()
-}
-
-dependencies {
-  silverpeas "org.silverpeas:silverpeas-assembly:${project.version}"
 }
 
 buildscript {
@@ -61,6 +35,7 @@ project.ext {
   jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
   distDir = new File('dist', buildDir)
   deploymentsHome = new File("${project.silversetup.silverpeasHome}/deployments")
+  jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
 }
 
 /**
@@ -68,6 +43,11 @@ project.ext {
  */
 silversetup {
   driversDir = "${buildDir}/drivers"
+  logging {
+    logDir = "${project.silversetup.silverpeasHome}/log"
+    defaultLevel = project.logLevel
+    scriptTasks = ['assemble', 'configure', 'install']
+  }
 }
 
 /**
@@ -164,7 +144,7 @@ task configure(dependsOn: assemble) {
   doFirst {
     if (deploymentsHome.exists()) {
       JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-          .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
+          .redirectOutputTo(jbossOutputLog)
           .useLogger(log)
       deploymentsHome.listFiles().each { artifact ->
         log.info "Uninstall ${artifact.name}"
@@ -192,7 +172,7 @@ task install(dependsOn: [configure, migration]) {
       into deploymentsHome
     }
     JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
+        .redirectOutputTo(jbossOutputLog)
         .useLogger(log)
     try {
       deploymentsHome.listFiles().each { artifact ->
@@ -214,7 +194,7 @@ task start {
   group 'Silverpeas'
   doLast {
     new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
+        .redirectOutputTo(jbossOutputLog)
         .start()
   }
 }
@@ -227,7 +207,7 @@ task debug {
   group 'Silverpeas'
   doLast {
     new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
+        .redirectOutputTo(jbossOutputLog)
         .debug()
   }
 }
@@ -240,7 +220,7 @@ task stop {
   group 'Silverpeas'
   doLast {
     new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(new File("${silversetup.logDir}/output.log"))
+        .redirectOutputTo(jbossOutputLog)
         .stop()
   }
 }

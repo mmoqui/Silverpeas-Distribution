@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly>
+  <id>distribution-windows</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <outputDirectory>bin</outputDirectory>
+      <directory>src/main/dist/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>silverpeas</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>bin</outputDirectory>
+      <directory>src/main/dist/bin</directory>
+      <filtered>true</filtered>
+      <includes>
+        <include>build.gradle</include>
+        <include>silverpeas.gradle</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>bin</outputDirectory>
+      <directory>src/main/dist/bin</directory>
+      <excludes>
+        <exclude>silverpeas</exclude>
+        <exclude>build.gradle</exclude>
+        <exclude>silverpeas.gradle</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>configuration</outputDirectory>
+      <directory>src/main/dist/configuration</directory>
+    </fileSet>
+    <fileSet>
+      <outputDirectory>log</outputDirectory>
+      <directory>src/main/dist/log</directory>
+    </fileSet>
+  </fileSets>
+</assembly>

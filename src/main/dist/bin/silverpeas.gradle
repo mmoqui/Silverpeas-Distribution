@@ -1,0 +1,14 @@
+version = '${project.version}'
+
+configurations {
+  silverpeas {
+    description = 'Silverpeas Modules'
+    transitive = true
+  }
+}
+
+dependencies {
+  silverpeas "org.silverpeas:silverpeas-assembly:''${project.version}"
+}
+
+project.ext.logLevel = org.gradle.api.logging.LogLevel.INFO

@@ -14,13 +14,3 @@ build
 nbactions.xml
 nb-configuration.xml
 nbactions.xml
-data
-dbRepository
-properties
-resources
-silvertrace
-xmlcomponents
-jcr
-log
-deployments
-migrations
