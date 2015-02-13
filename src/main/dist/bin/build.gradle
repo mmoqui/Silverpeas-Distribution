@@ -14,28 +14,25 @@ repositories {
     url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
   }
   mavenLocal()
+  flatDir {
+    dirs 'lib'
+  }
 }
 
 buildscript {
   dependencies {
     classpath "org.silverpeas:silverpeas-setup:${project.version}"
+    classpath fileTree(dir: 'lib', include: ['*.jar'])
   }
   repositories {
     maven {
       url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
     }
     mavenLocal()
+    flatDir {
+      dirs 'lib'
+    }
   }
-}
-
-/**
- * Global project properties.
- */
-project.ext {
-  jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
-  distDir = new File('dist', buildDir)
-  deploymentsHome = new File("${project.silversetup.silverpeasHome}/deployments")
-  jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
 }
 
 /**
@@ -48,6 +45,16 @@ silversetup {
     defaultLevel = project.logLevel
     scriptTasks = ['assemble', 'configure', 'install']
   }
+}
+
+/**
+ * Global project properties.
+ */
+project.ext {
+  jackrabbitJCAUri = 'http://www.silverpeas.org/files/jackrabbit-jca.rar'
+  distDir = new File('dist', buildDir)
+  deploymentsHome = new File("${project.silversetup.silverpeasHome}/deployments")
+  jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
 }
 
 /**
@@ -93,11 +100,14 @@ assemble {
           exclude '**/META-INF/**'
           into project.silversetup.silverpeasHome
         }
-      } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds')) {
+      } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds') ||
+          a.name.startsWith('ojdbc')) {
         // h2 is already provided by JBoss >= 8
         copy {
           from(file(a)) {
-            rename a.name, a.name.substring(0, a.name.indexOf('-')) + '.jar'
+            if (a.name.indexOf('-') > 0) {
+              rename a.name, a.name.substring(0, a.name.indexOf('-')) + '.jar'
+            }
           }
           into project.silversetup.driversDir
         }

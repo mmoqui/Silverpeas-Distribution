@@ -8,7 +8,7 @@ import java.nio.file.Paths
  */
 
 log.info 'Generate the tickers from samples'
-Path tickerHome = Service.getPath("${settings.SILVERPEAS_DATA_HOME}/web/weblib.war/ticker")
+Path tickerHome = service.getPath("${settings.SILVERPEAS_DATA_HOME}/web/weblib.war/ticker")
 if (Files.exists(tickerHome) && Files.isDirectory(tickerHome)) {
   tickerHome.toFile().eachFileMatch(~/sample_.*/) {
     File aTicker = new File(it.name.replaceAll('sample_', ''), tickerHome.toFile())

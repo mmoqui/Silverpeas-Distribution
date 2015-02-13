@@ -12,9 +12,9 @@ import java.nio.file.Path
 
 log.info 'Configure the JCR repository'
 
-Path jcrHomePath = Service.getPath(settings.JCR_HOME)
-Path jcrConfigurationPath = Service.getPath("${settings.JCR_HOME}/repository.xml")
-Path jcrConfigurationTemplatePath = Service.getPath("${settings.CONFIGURATION_HOME}/silverpeas/repository.jcr")
+Path jcrHomePath = service.getPath(settings.JCR_HOME)
+Path jcrConfigurationPath = service.getPath("${settings.JCR_HOME}/repository.xml")
+Path jcrConfigurationTemplatePath = service.getPath("${settings.CONFIGURATION_HOME}/silverpeas/resources/repository.jcr")
 
 SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance()
 factory.validating = false
@@ -23,15 +23,15 @@ factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-d
 
 /* creates the JCR home directory if it doesn't already exist and copies the JCR configuration file
 * into this directory */
-Service.createDirectory(jcrHomePath, [readable: true, writable: true, executable: true])
+service.createDirectory(jcrHomePath, [readable: true, writable: true, executable: true])
 if (!Files.exists(jcrConfigurationPath)) {
   Files.copy(jcrConfigurationTemplatePath, jcrConfigurationPath)
 }
 
 /* case of an old workspace named jackrabbit */
-Path oldWorkspacePath = Service.getPath("${settings.JCR_HOME}/workspaces/jackrabbit")
+Path oldWorkspacePath = service.getPath("${settings.JCR_HOME}/workspaces/jackrabbit")
 if (Files.exists(oldWorkspacePath)) {
-  Path newWorkspacePath = Service.getPath("${settings.JCR_HOME}/workspaces/silverpeas")
+  Path newWorkspacePath = service.getPath("${settings.JCR_HOME}/workspaces/silverpeas")
   Files.move(oldWorkspacePath, newWorkspacePath)
   def jcrWorkspaceConf = new XmlSlurper(factory.newSAXParser())
       .parse(new File('workspace.xml', newWorkspacePath.toFile()))

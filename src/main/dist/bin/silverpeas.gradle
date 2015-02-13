@@ -1,3 +1,4 @@
+/* Silverpeas version */
 version = '${project.version}'
 
 configurations {
@@ -7,8 +8,11 @@ configurations {
   }
 }
 
+/* Dependencies to fetch for making Silverpeas */
 dependencies {
   silverpeas "org.silverpeas:silverpeas-assembly:''${project.version}"
+  silverpeas fileTree(dir: 'lib', include: ['*.jar'])
 }
 
+/* Log level for the Silverpeas build */
 project.ext.logLevel = org.gradle.api.logging.LogLevel.INFO

@@ -3,11 +3,8 @@
 
   <!-- PROPERTIES CONFIGURATION -->
   <fileset root="${SILVERPEAS_HOME}/properties/org/silverpeas/">
-    <configfile name="util/jcr.properties">
-      <parameter key="jcr.configuration.persistence.manager">${JACKRABBIT_PERSISTENCE_MANAGER}</parameter>
-      <parameter key="jcr.home.dir.url">file:///${SILVERPEAS_HOME}/jcr</parameter>
-      <parameter key="schema">${DB_SCHEMA}</parameter>
-    </configfile>
+
+    <!-- Silverpeas Core properties configuration -->
 
     <configfile name="systemSettings.properties">
       <parameter key="http.proxyHost">${PROXY_HOST}</parameter>
@@ -27,6 +24,39 @@
       <parameter key="securityPath">${HIDDEN_SILVERPEAS_DIR}</parameter>
     </configfile>
 
+    <configfile name="util/jcr.properties">
+      <parameter key="jcr.configuration.persistence.manager">${JACKRABBIT_PERSISTENCE_MANAGER}</parameter>
+      <parameter key="jcr.home.dir">${SILVERPEAS_HOME}/jcr</parameter>
+      <parameter key="schema">${DB_SCHEMA}</parameter>
+    </configfile>
+
+    <configfile name="util/stringtemplate.properties">
+      <parameter key="template.dir.core.default">${SILVERPEAS_HOME}/resources/StringTemplates/core
+      </parameter>
+      <parameter key="template.dir.core.custom">${SILVERPEAS_DATA_HOME}/StringTemplates/core
+      </parameter>
+      <parameter key="template.dir.components.default">
+        ${SILVERPEAS_HOME}/resources/StringTemplates/components
+      </parameter>
+      <parameter key="template.dir.components.custom">
+        ${SILVERPEAS_DATA_HOME}/StringTemplates/components
+      </parameter>
+    </configfile>
+
+    <configfile name="util/comment/Comment.properties">
+      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/</parameter>
+      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/</parameter>
+    </configfile>
+
+    <configfile name="util/i18n.properties">
+      <parameter key="languages">${SILVERPEAS_CONTENT_LANGUAGES}</parameter>
+    </configfile>
+
+    <configfile name="peasCore/SessionManager.properties">
+      <parameter key="scheduledSessionManagementTimeStamp">2</parameter>
+      <parameter key="userSessionTimeout">10</parameter>
+    </configfile>
+
     <configfile name="beans/admin/admin.properties">
       <parameter key="AdminDBDriver">${DB_DRIVER}</parameter>
       <parameter key="WaProductionDb">${DB_URL}</parameter>
@@ -44,33 +74,6 @@
 
     <configfile name="beans/admin/instance/control/instanciator.properties">
       <parameter key="xmlPackage">${SILVERPEAS_HOME}/xmlcomponents</parameter>
-    </configfile>
-
-    <configfile name="kmelia/settings/kmeliaSettings.properties">
-      <parameter key="templatePath">
-        ${SILVERPEAS_HOME}/resources/StringTemplates/components/kmelia/
-      </parameter>
-      <parameter key="customersTemplatePath">
-        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/kmelia/
-      </parameter>
-    </configfile>
-
-    <configfile name="survey/surveySettings.properties">
-      <parameter key="templatePath">
-        ${SILVERPEAS_HOME}/resources/StringTemplates/components/survey/
-      </parameter>
-      <parameter key="customersTemplatePath">
-        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/survey/
-      </parameter>
-    </configfile>
-
-    <configfile name="almanach/settings/almanachSettings.properties">
-      <parameter key="templatePath">
-        ${SILVERPEAS_HOME}/resources/StringTemplates/components/almanach/
-      </parameter>
-      <parameter key="customersTemplatePath">
-        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/almanach/
-      </parameter>
     </configfile>
 
     <configfile name="domains/domainSP.properties">
@@ -161,53 +164,40 @@
       <parameter key="pathInitialize">${SILVERPEAS_HOME}/initialize</parameter>
     </configfile>
 
-    <configfile name="util/i18n.properties">
-      <parameter key="languages">${SILVERPEAS_CONTENT_LANGUAGES}</parameter>
-    </configfile>
-
-    <configfile name="dbBuilder/settings/dbBuilderSettings.properties">
-      <parameter key="ADMINLOGIN">${SILVERPEAS_ADMIN_LOGIN}</parameter>
-      <parameter key="ADMINPASSWD">${SILVERPEAS_ADMIN_PASSWORD}</parameter>
-      <parameter key="URLSERVER">${SERVER_URL}</parameter>
-    </configfile>
-
     <configfile name="silverstatistics/SilverStatistics.properties">
       <parameter key="SilverPeasDataPath0">${SILVERPEAS_DATA_HOME}</parameter>
-    </configfile>
-
-    <configfile name="peasCore/SessionManager.properties">
-      <parameter key="scheduledSessionManagementTimeStamp">2</parameter>
-      <parameter key="userSessionTimeout">10</parameter>
-    </configfile>
-
-    <configfile name="infoLetter/settings/infoLetterSettings.properties">
-      <parameter key="templatePath">
-        ${SILVERPEAS_HOME}/resources/StringTemplates/components/infoLetter/
-      </parameter>
-      <parameter key="customersTemplatePath">
-        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/infoLetter/
-      </parameter>
     </configfile>
 
     <configfile name="importExport/settings/mapping.properties">
       <parameter key="mappingDir">file:///${SILVERPEAS_HOME}/resources/importExport/</parameter>
     </configfile>
 
-    <configfile name="questionReply/settings/questionReplySettings.properties">
-      <parameter key="mappingDir">file:///${SILVERPEAS_HOME}/resources/QuestionReply/</parameter>
+    <configfile name="importExport/settings/importSettings.properties">
+      <parameter key="importRepository">${SILVERPEAS_DATA_HOME}/import/</parameter>
     </configfile>
 
     <configfile name="publicationTemplate/settings/template.properties">
       <parameter key="templateDir">${SILVERPEAS_DATA_HOME}/templateRepository/</parameter>
     </configfile>
 
-    <configfile name="whitePages/settings/template.properties">
-      <parameter key="templateDir">file:///${SILVERPEAS_DATA_HOME}/templateRepository/</parameter>
+    <configfile name="communicationUser/settings/communicationUserSettings.properties">
+      <parameter key="pathDiscussions">${SILVERPEAS_DATA_HOME}/imRepository/</parameter>
     </configfile>
 
     <configfile name="jobManagerPeas/settings/jobManagerPeasSettings.properties">
       <parameter key="IsKMVisible">true</parameter>
       <parameter key="IsToolsVisible">true</parameter>
+    </configfile>
+
+    <configfile name="jobDomainPeas/settings/jobDomainPeasSettings.properties">
+      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/</parameter>
+      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/</parameter>
+    </configfile>
+
+    <configfile name="jobStartPagePeas/settings/jobStartPagePeasSettings.properties">
+      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/admin</parameter>
+      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/admin
+      </parameter>
     </configfile>
 
     <configfile name="workflow/engine/castorSettings.properties">
@@ -226,6 +216,62 @@
 
     <configfile name="workflow/engine/schedulerSettings.properties">
       <parameter key="timeoutSchedule">* 0,4,8,12,16,20 * * *</parameter>
+    </configfile>
+
+    <configfile name="portlets/portletsSettings.properties">
+      <parameter key="portlets.configDir">${SILVERPEAS_DATA_HOME}/portlets</parameter>
+    </configfile>
+
+    <configfile name="dbBuilder/settings/dbBuilderSettings.properties">
+      <parameter key="ADMINLOGIN">${SILVERPEAS_ADMIN_LOGIN}</parameter>
+      <parameter key="ADMINPASSWD">${SILVERPEAS_ADMIN_PASSWORD}</parameter>
+      <parameter key="URLSERVER">${SERVER_URL}</parameter>
+    </configfile>
+
+    <!-- Silverpeas Components properties configuration -->
+
+    <configfile name="kmelia/settings/kmeliaSettings.properties">
+      <parameter key="templatePath">
+        ${SILVERPEAS_HOME}/resources/StringTemplates/components/kmelia/
+      </parameter>
+      <parameter key="customersTemplatePath">
+        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/kmelia/
+      </parameter>
+    </configfile>
+
+    <configfile name="survey/surveySettings.properties">
+      <parameter key="templatePath">
+        ${SILVERPEAS_HOME}/resources/StringTemplates/components/survey/
+      </parameter>
+      <parameter key="customersTemplatePath">
+        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/survey/
+      </parameter>
+    </configfile>
+
+    <configfile name="almanach/settings/almanachSettings.properties">
+      <parameter key="templatePath">
+        ${SILVERPEAS_HOME}/resources/StringTemplates/components/almanach/
+      </parameter>
+      <parameter key="customersTemplatePath">
+        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/almanach/
+      </parameter>
+    </configfile>
+
+    <configfile name="infoLetter/settings/infoLetterSettings.properties">
+      <parameter key="templatePath">
+        ${SILVERPEAS_HOME}/resources/StringTemplates/components/infoLetter/
+      </parameter>
+      <parameter key="customersTemplatePath">
+        ${SILVERPEAS_DATA_HOME}/StringTemplates/components/infoLetter/
+      </parameter>
+    </configfile>
+
+    <configfile name="questionReply/settings/questionReplySettings.properties">
+      <parameter key="mappingDir">file:///${SILVERPEAS_HOME}/resources/QuestionReply/</parameter>
+    </configfile>
+
+    <configfile name="whitePages/settings/template.properties">
+      <parameter key="templateDir">file:///${SILVERPEAS_DATA_HOME}/templateRepository/</parameter>
     </configfile>
 
     <!--
@@ -265,14 +311,6 @@
       </parameter>
     </configfile>
 
-    <configfile name="portlets/portletsSettings.properties">
-      <parameter key="portlets.configDir">${SILVERPEAS_DATA_HOME}/portlets</parameter>
-    </configfile>
-
-    <configfile name="communicationUser/settings/communicationUserSettings.properties">
-      <parameter key="pathDiscussions">${SILVERPEAS_DATA_HOME}/imRepository/</parameter>
-    </configfile>
-
     <configfile name="questionReply/settings/questionReplySettings.properties">
       <parameter key="templatePath">
         ${SILVERPEAS_HOME}/resources/StringTemplates/components/question-reply/
@@ -284,17 +322,6 @@
 
     <configfile name="whitePages/settings/template.properties">
       <parameter key="templateDir">file:///${SILVERPEAS_DATA_HOME}/templateRepository</parameter>
-    </configfile>
-
-    <configfile name="jobDomainPeas/settings/jobDomainPeasSettings.properties">
-      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/</parameter>
-      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/</parameter>
-    </configfile>
-
-    <configfile name="jobStartPagePeas/settings/jobStartPagePeasSettings.properties">
-      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/admin</parameter>
-      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/admin
-      </parameter>
     </configfile>
 
     <configfile name="blog/settings/blogSettings.properties">
@@ -332,81 +359,10 @@
       </parameter>
     </configfile>
 
-    <configfile name="util/stringtemplate.properties">
-      <parameter key="template.dir.core.default">${SILVERPEAS_HOME}/resources/StringTemplates/core
-      </parameter>
-      <parameter key="template.dir.core.custom">${SILVERPEAS_DATA_HOME}/StringTemplates/core
-      </parameter>
-      <parameter key="template.dir.components.default">
-        ${SILVERPEAS_HOME}/resources/StringTemplates/components
-      </parameter>
-      <parameter key="template.dir.components.custom">
-        ${SILVERPEAS_DATA_HOME}/StringTemplates/components
-      </parameter>
-    </configfile>
-
     <configfile name="webSites/settings/webSiteSettings.properties">
       <parameter key="uploadsPath">${SILVERPEAS_DATA_WEB}/website.war/</parameter>
     </configfile>
 
-    <configfile name="importExport/settings/importSettings.properties">
-      <parameter key="importRepository">${SILVERPEAS_DATA_HOME}/import/</parameter>
-    </configfile>
-
-    <configfile name="util/comment/Comment.properties">
-      <parameter key="customersTemplatePath">${SILVERPEAS_DATA_HOME}/StringTemplates/</parameter>
-      <parameter key="templatePath">${SILVERPEAS_HOME}/resources/StringTemplates/</parameter>
-    </configfile>
-
   </fileset>
-
-  <!-- workflowEngine settings -->
-  <!--
-  <fileset root="${SILVERPEAS_HOME}/resources/instanceManager/">
-    <textfile name="datasource.xml">
-      <parameter key="&lt;!DOCTYPE[^&gt;]*&gt;" use-regex="true"> </parameter>
-    </textfile>
-
-    <xmlfile name="datasource.xml">
-      <parameter key="/jdo-conf" mode="update">
-        <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
-      </parameter>
-      <parameter key="/jdo-conf/datasource" mode="update">
-        <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
-      </parameter>
-      <parameter key="/jdo-conf/datasource/mapping" mode="update">
-        <value location="@href">file:///${SILVERPEAS_HOME}/resources/instanceManager/mapping.xml</value>
-      </parameter>
-    </xmlfile>
-
-    <textfile name="fast_database.xml">
-      <parameter key="&lt;!DOCTYPE[^&gt;]*&gt;" use-regex="true"> </parameter>
-    </textfile>
-
-    <xmlfile name="fast_database.xml">
-      <parameter key="/datasource" mode="update">
-        <value location="@engine">$eval{{if(new String("${DB_SERVERTYPEU}").equals("MSSQL")) value="sql-server"; else if(new String("${DB_SERVERTYPEU}").equals("POSTGRES")) value="postgresql"; else value="oracle";}}</value>
-      </parameter>
-      <parameter key="/datasource/mapping" mode="update">
-        <value location="@href">file:///${SILVERPEAS_HOME}/resources/instanceManager/fast_mapping.xml</value>
-      </parameter>
-    </xmlfile>
-  </fileset>
--->
-
-  <!-- wiki -->
-  <!--
-  <fileset root="${SILVERPEAS_HOME}/jar/silverpeas.ear/war-ic.war/WEB-INF/">
-    <configfile name="jspwiki.properties">
-      <parameter key="jspwiki.workDir">${SILVERPEAS_DATA_HOME}/temp/wiki/indexes</parameter>
-      <parameter key="jspwiki.basicAttachmentProvider.storageDir">${SILVERPEAS_DATA_HOME}/temp/wiki/</parameter>
-      <parameter key="jspwiki.fileSystemProvider.pageDir">${SILVERPEAS_DATA_HOME}/temp/wiki/pages</parameter>
-    </configfile>
-  </fileset>
-  -->
-  <!--
-  <script name="createTickers.groovy"/>
-  <script name="updateAuthProperties.groovy"/>
-  -->
 
 </silverpeas-settings>
