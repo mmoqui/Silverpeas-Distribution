@@ -173,6 +173,19 @@ task install(dependsOn: [configure, migration]) {
   description 'Installs Silverpeas into JBoss'
   group 'Build'
   Logger log = Logger.getLogger(this.name)
+  JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
+      .redirectOutputTo(jbossOutputLog)
+      .useLogger(log)
+  doFirst {
+    /*
+     * There is a bug with the Wildfly reloading: it breaks out the MDB deployment!
+     * So, in the case there were a reload during the configuration, we stop JBoss/Wildfly before
+     * deploying any artifact.
+     */
+    if (jboss.isStartingOrRunning()) {
+      jboss.stop()
+    }
+  }
   doLast {
     copy {
       from(fileTree(buildDir))
@@ -181,9 +194,6 @@ task install(dependsOn: [configure, migration]) {
       include '*.war'
       into deploymentsHome
     }
-    JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(jbossOutputLog)
-        .useLogger(log)
     try {
       deploymentsHome.listFiles().each { artifact ->
         log.info "Installation of ${artifact.name}"
@@ -245,7 +255,7 @@ task status {
     def jboss = new JBossServer(project.silversetup.jbossHome)
     String configurationStatus = (jboss.isAlreadyConfigured() ? 'Configured: [OK]' : 'Configured: [NOK]')
     String executionStatus = (jboss.isRunning() ? 'Running:    [OK]' : 'Running:    [NOK]')
-    String deploymentStatus = (jboss.isRunning() && jboss.isDeployed('silverpeas.war') ? 'Active:    [OK]' : 'Active:    [NOK]')
+    String deploymentStatus = (jboss.isRunning() && jboss.isDeployed('silverpeas.war') ? 'Active:     [OK]' : 'Active:     [NOK]')
     println configurationStatus
     println executionStatus
     println deploymentStatus
