@@ -83,11 +83,13 @@ assemble {
   outputs.dir distDir
   outputs.dir file(new File(project.silversetup.driversDir))
   outputs.file file(new File('silverpeas.war', buildDir))
+  Logger log = Logger.getLogger('assemble')
   doFirst {
     // fetch all the artifacts and explode some of them into the output directories
     def artifacts = configurations.silverpeas.files
     artifacts.each { a ->
       if (a.name.endsWith('.war')) {
+        log.info "Explode ${a.name} into ${distDir.path}"
         copy {
           from(zipTree(a)) {
             rename 'web.xml', "web-${a.name}.xml"
@@ -95,6 +97,7 @@ assemble {
           into distDir.path
         }
       } else if (a.name.endsWith('-configuration.jar')) {
+        logger.info "Explode ${a.name} into ${project.silversetup.silverpeasHome}"
         copy {
           from(zipTree(a))
           exclude '**/META-INF/**'
@@ -102,6 +105,7 @@ assemble {
         }
       } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds') ||
           a.name.startsWith('ojdbc')) {
+        log.info "JDBC driver found: ${a.name}"
         // h2 is already provided by JBoss >= 8
         copy {
           from(file(a)) {
@@ -113,10 +117,13 @@ assemble {
         }
       }
     }
+
+    log.info "Fetch jackrabbit JCA from ${jackrabbitJCAUri}"
     ant.get(src: jackrabbitJCAUri, dest: buildDir.path)
   }
   doLast {
     // merge all of the web.xml from the different WARs into a single one
+    log.info "Merge all the web.xml into a single one"
     def mainWebXmlFileName = "web-war-core-${project.version}.war.xml"
     def mainWebXmlFile = new File("${distDir.path}/WEB-INF/${mainWebXmlFileName}")
     def mainWebXml = new XmlSlurper(false, false).parse(mainWebXmlFile)
@@ -138,6 +145,25 @@ assemble {
     }
     XmlUtil.serialize(mainWebXml, new FileWriter("${distDir.path}/WEB-INF/web.xml"))
     GFileUtils.forceDelete(mainWebXmlFile)
+
+    // generate the final persistence.xml in which each Silverpeas components are referenced as a
+    // JPA entities provider
+    log.info "Update the persistence.xml with all the providers of JPA entities"
+    File xmlPersistenceFile = new File('WEB-INF/classes/META-INF/persistence.xml', distDir)
+    def persistence = new XmlSlurper(false, false).parse(xmlPersistenceFile)
+    new File('WEB-INF/lib', distDir).list(new FilenameFilter() {
+      @Override
+      boolean accept(final File dir, final String name) {
+        return name.endsWith("''${project.version}.jar")
+      }
+    }).each { jpaComponent ->
+      persistence.'persistence-unit'.'jta-data-source' + {
+        'jar-file'("lib/${jpaComponent}")
+      }
+    }
+    XmlUtil.serialize(persistence, new FileWriter(xmlPersistenceFile.path))
+
+    log.info "Generate silverpeas.war"
     ant.zip(destfile: "${buildDir.path}/silverpeas.war") {
       fileset(dir: distDir.path)
     }
