@@ -10,10 +10,10 @@ apply plugin: 'maven'
 apply plugin: 'silversetup'
 
 repositories {
+  mavenLocal()
   maven {
     url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
   }
-  mavenLocal()
   flatDir {
     dirs 'lib'
   }
@@ -25,10 +25,10 @@ buildscript {
     classpath fileTree(dir: 'lib', include: ['*.jar'])
   }
   repositories {
+    mavenLocal()
     maven {
       url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
     }
-    mavenLocal()
     flatDir {
       dirs 'lib'
     }

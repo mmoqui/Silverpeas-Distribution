@@ -8,7 +8,7 @@ data-source add \
     --name=Silverpeas \
     --driver-name=${DB_DRIVER_NAME} \
     --connection-url=${DB_URL} \
-    --jndi-name=java:/datasources/silverpeas \
+    --jndi-name=${DB_DATASOURCE_JNDI} \
     --user-name=${DB_USER} \
     --password=${DB_PASSWORD} \
     --use-ccm=true \

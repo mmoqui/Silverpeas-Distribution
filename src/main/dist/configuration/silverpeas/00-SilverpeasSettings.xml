@@ -58,15 +58,7 @@
     </configfile>
 
     <configfile name="beans/admin/admin.properties">
-      <parameter key="AdminDBDriver">${DB_DRIVER}</parameter>
-      <parameter key="WaProductionDb">${DB_URL}</parameter>
-      <parameter key="WaProductionUser">${DB_USER}</parameter>
-      <parameter key="WaProductionPswd">${DB_PASSWORD}</parameter>
-      <parameter key="WaAdminDb">${DB_URL}</parameter>
-      <parameter key="WaAdminUser">${DB_USER}</parameter>
-      <parameter key="WaAdminPswd">${DB_PASSWORD}</parameter>
-      <parameter key="AdministratorLogin">${SILVERPEAS_ADMIN_LOGIN}</parameter>
-      <parameter key="AdministratorPassword">${SILVERPEAS_ADMIN_PASSWORD}</parameter>
+      <parameter key="DefaultDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
       <parameter key="AdministratorEMail">${SILVERPEAS_ADMIN_EMAIL}</parameter>
       <parameter key="EntrepriseClientSpaceId">1</parameter>
       <parameter key="xmlSpaceTemplate">${SILVERPEAS_HOME}/xmlspacetemplates</parameter>
@@ -77,15 +69,11 @@
     </configfile>
 
     <configfile name="domains/domainSP.properties">
-      <parameter key="database.SQLJDBCUrl">${DB_URL}</parameter>
-      <parameter key="database.SQLAccessLogin">${DB_USER}</parameter>
-      <parameter key="database.SQLAccessPasswd">${DB_PASSWORD}</parameter>
+      <parameter key="database.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="domains/domainSQL.properties">
-      <parameter key="database.SQLJDBCUrl">${DB_URL}</parameter>
-      <parameter key="database.SQLAccessLogin">${DB_USER}</parameter>
-      <parameter key="database.SQLAccessPasswd">${DB_PASSWORD}</parameter>
+      <parameter key="database.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="domains/domainMSAD.properties">
@@ -99,26 +87,18 @@
     </configfile>
 
     <configfile name="authentication/domains.properties">
-      <parameter key="SQLDomainJDBCUrl">${DB_URL}</parameter>
-      <parameter key="SQLDomainAccessLogin">${DB_USER}</parameter>
-      <parameter key="SQLDomainAccessPasswd">${DB_PASSWORD}</parameter>
-      <parameter key="SQLDomainDriverClass">${DB_DRIVER}</parameter>
+      <parameter key="SQLDomainDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="authentication/autDomainSP.properties">
       <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
-      <parameter key="autServer1.SQLJDBCUrl">${DB_URL}</parameter>
-      <parameter key="autServer1.SQLAccessLogin">${DB_USER}</parameter>
-      <parameter key="autServer1.SQLAccessPasswd">${DB_PASSWORD}</parameter>
-      <parameter key="autServer1.SQLDriverClass">${DB_DRIVER}</parameter>
+      <parameter key="autServer0.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
+      <parameter key="autServer1.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="authentication/autDomainSQL.properties">
       <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
-      <parameter key="autServer0.SQLJDBCUrl">${DB_URL}</parameter>
-      <parameter key="autServer0.SQLAccessLogin">${DB_USER}</parameter>
-      <parameter key="autServer0.SQLAccessPasswd">${DB_PASSWORD}</parameter>
-      <parameter key="autServer0.SQLDriverClass">${DB_DRIVER}</parameter>
+      <parameter key="autServer0.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="authentication/autDomainLDAP.properties">

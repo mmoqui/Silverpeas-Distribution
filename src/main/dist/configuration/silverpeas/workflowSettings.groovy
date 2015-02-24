@@ -24,11 +24,15 @@ switch (settings.DB_SERVERTYPE) {
 }
 
 xmlSettingFiles.each { aXmlSettingFile ->
-  def xmlMapping = (aXmlSettingFile.contains('fast')) ? 'fast_mapping.xml':'mapping.xml'
   def jdoConf = new XmlSlurper(false, false).parse(new File("${workflowSettingsDir}/${aXmlSettingFile}"))
   jdoConf.@engine = engine
-  jdoConf.database.@engine = engine
-  jdoConf.database.mapping.@href = "file:///${settings.SILVERPEAS_HOME}/resources/instanceManager/${xmlMapping}" as String
+  if (aXmlSettingFile.contains('fast')) {
+    jdoConf.mapping.@href = "file:///${settings.SILVERPEAS_HOME}/resources/instanceManager/fast_mapping.xml" as String
+  } else {
+    jdoConf.database.@engine = engine
+    jdoConf.database.mapping.@href = "file:///${settings.SILVERPEAS_HOME}/resources/instanceManager/mapping.xml" as String
+  }
 
   XmlUtil.serialize(jdoConf, new FileWriter("${workflowSettingsDir}/${aXmlSettingFile}"))
 }
+
