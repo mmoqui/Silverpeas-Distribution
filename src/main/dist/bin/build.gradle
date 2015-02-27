@@ -252,9 +252,10 @@ task debug {
   description 'Starts Silverpeas in debug mode'
   group 'Silverpeas'
   doLast {
+    int debuggingPort = (project.hasProperty('port') ? port as int:5005)
     new JBossServer(project.silversetup.jbossHome)
         .redirectOutputTo(jbossOutputLog)
-        .debug()
+        .debug(debuggingPort)
   }
 }
 
