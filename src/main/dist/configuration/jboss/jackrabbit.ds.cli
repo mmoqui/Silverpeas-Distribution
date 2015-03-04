@@ -9,6 +9,7 @@ data-source add \
     --driver-name=${DB_DRIVER_NAME} \
     --connection-url=${DB_URL} \
     --jndi-name=java:/datasources/DocumentStore \
+    --jta=false \
     --enabled=true \
     --use-java-context=true \
     --user-name=${DB_USER} \
