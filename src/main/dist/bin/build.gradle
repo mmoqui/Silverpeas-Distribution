@@ -2,6 +2,9 @@ import groovy.xml.XmlUtil
 import org.silverpeas.setup.api.Logger
 import org.silverpeas.setup.configuration.JBossServer
 
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+
 description = 'Distribution of Silverpeas. Its aim is to setup and to execute a Silverpeas installation'
 group = 'org.silverpeas'
 
@@ -86,6 +89,7 @@ assemble {
   Logger log = Logger.getLogger('assemble')
   doFirst {
     // fetch all the artifacts and explode some of them into the output directories
+    Pattern pattern = ~/([a-zA-Z_\-]+)(-[0-9.]+[a-zA-Z0-9_\-.]*)(\.\w+)/
     def artifacts = configurations.silverpeas.files
     artifacts.each { a ->
       if (a.name.endsWith('.war')) {
@@ -109,17 +113,30 @@ assemble {
         // h2 is already provided by JBoss >= 8
         copy {
           from(file(a)) {
-            if (a.name.indexOf('-') > 0) {
-              rename a.name, a.name.substring(0, a.name.indexOf('-')) + '.jar'
+            String nameWithoutVersion = a.name
+            Matcher matching = pattern.matcher(a.name)
+            matching.each {
+              nameWithoutVersion = it[1] + it[3]
             }
+            rename a.name, nameWithoutVersion
           }
           into project.silversetup.driversDir
         }
+      } else if (a.name.endsWith('.rar')) {
+        log.info "JCA found: ${a.name}"
+        copy {
+          from(file(a)) {
+            String nameWithoutVersion = a.name
+            Matcher matching = pattern.matcher(a.name)
+            matching.each {
+              nameWithoutVersion = it[1] + it[3]
+            }
+            rename a.name, nameWithoutVersion
+          }
+          into buildDir
+        }
       }
     }
-
-    log.info "Fetch jackrabbit JCA from ${jackrabbitJCAUri}"
-    ant.get(src: jackrabbitJCAUri, dest: buildDir.path)
   }
   doLast {
     // merge all of the web.xml from the different WARs into a single one
