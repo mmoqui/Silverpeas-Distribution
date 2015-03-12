@@ -2,7 +2,8 @@
 
 <module xmlns="urn:jboss:module:1.3" name="javax.jcr">
   <dependencies>
-  <module name="javax.transaction.api" export="true"/>
+    <module name="javax.api" export="true"/>
+    <module name="javax.transaction.api" export="true"/>
   </dependencies>
 
   <resources>

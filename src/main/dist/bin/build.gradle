@@ -199,7 +199,7 @@ task configure(dependsOn: assemble) {
       JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
           .redirectOutputTo(jbossOutputLog)
           .useLogger(log)
-      deploymentsHome.listFiles().each { artifact ->
+      deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
         log.info "Uninstall ${artifact.name}"
         jboss.undeploy(artifact.name)
         log.info "Uninstall ${artifact.name}: [OK]"
@@ -238,13 +238,37 @@ task install(dependsOn: [configure, migration]) {
       into deploymentsHome
     }
     try {
-      deploymentsHome.listFiles().each { artifact ->
+      deploymentsHome.listFiles().sort().each { artifact ->
         log.info "Installation of ${artifact.name}"
         jboss.deploy(artifact.path)
         log.info "Installation of ${artifact.name}: [OK]"
       }
     } catch (RuntimeException ex) {
       throw new GradleScriptException("Installation Failure", ex)
+    }
+  }
+}
+
+task redeploy {
+  description 'Redeploy the artifacts in the SILVERPEAS HOME\'s deployments repository'
+  group 'Silverpeas'
+  onlyIf { deploymentsHome.exists() }
+  JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
+      .redirectOutputTo(jbossOutputLog)
+  doFirst {
+    deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
+      println "Undeploy ${artifact.name}..."
+      jboss.undeploy(artifact.name)
+    }
+  }
+  doLast {
+    try {
+      deploymentsHome.listFiles().sort().each { artifact ->
+        println "Deploy ${artifact.name}..."
+        jboss.deploy(artifact.path)
+      }
+    } catch (RuntimeException ex) {
+      throw new GradleScriptException("Redeployment Failure", ex)
     }
   }
 }
