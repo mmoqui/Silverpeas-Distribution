@@ -64,6 +64,15 @@ project.ext {
  * Cleans all the artifacts produced by the build of a Silverpeas distribution.
  */
 clean {
+  doFirst {
+    JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
+        .redirectOutputTo(jbossOutputLog)
+    if (jboss.isStartingOrRunning()) {
+      print 'WARNING: JBoss is running, stop it...'
+      jboss.stop()
+      println ' done'
+    }
+  }
   doLast {
     ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: '*.log')
     ant.delete(dir: "${silversetup.silverpeasHome}/silvertrace", includeemptydirs: true)
@@ -193,7 +202,7 @@ assemble {
 task configure(dependsOn: assemble) {
   description 'Configures both JBoss and Silverpeas'
   group 'Build'
-  Logger log = Logger.getLogger(this.name)
+  Logger log = Logger.getLogger('configure')
   doFirst {
     if (deploymentsHome.exists()) {
       JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
@@ -215,7 +224,7 @@ task configure(dependsOn: assemble) {
 task install(dependsOn: [configure, migration]) {
   description 'Installs Silverpeas into JBoss'
   group 'Build'
-  Logger log = Logger.getLogger(this.name)
+  Logger log = Logger.getLogger('install')
   JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
       .redirectOutputTo(jbossOutputLog)
       .useLogger(log)
