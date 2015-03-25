@@ -4,4 +4,4 @@
 
 #check: /subsystem=deployment-scanner/scanner=silverpeas-data-web
 
-/subsystem=deployment-scanner/scanner=silverpeas-data-web:add(path=${SILVERPEAS_DATA_WEB},auto-deploy-exploded=true)
+/subsystem=deployment-scanner/scanner=silverpeas-data-web:add(path=${SILVERPEAS_DATA_WEB})
