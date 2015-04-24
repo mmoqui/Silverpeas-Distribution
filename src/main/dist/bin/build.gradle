@@ -229,6 +229,13 @@ task install(dependsOn: [configure, migration]) {
       .redirectOutputTo(jbossOutputLog)
       .useLogger(log)
   doFirst {
+    if (project.hasProperty('debug')) {
+      if (debug) {
+        jboss.forceDebugMode(debug as int)
+      } else {
+        jboss.forceDebugMode()
+      }
+    }
     /*
      * There is a bug with the Wildfly reloading: it breaks out the MDB deployment!
      * So, in the case there were a reload during the configuration, we stop JBoss/Wildfly before
