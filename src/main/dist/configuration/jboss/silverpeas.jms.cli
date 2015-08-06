@@ -1,0 +1,17 @@
+#
+# Add JMS queues and topics used by Silverpeas
+#
+
+#
+# JMS queues definition
+#
+jms-queue add --queue-address=notifications --entries=queue/notificationsQueue
+jms-queue add --queue-address=statistics --entries=queue/statisticsQueue
+
+#
+# JMS topics definition
+#
+jms-topic add --topic-address=comments --entries=topic/comments
+jms-topic add --topic-address=wysiwyg --entries=topic/wysiwyg
+jms-topic add --topic-address=attachments --entries=topic/attachments
+

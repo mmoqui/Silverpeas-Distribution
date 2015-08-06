@@ -40,7 +40,7 @@
   </repositories>
 
   <properties>
-    <server.distribution>jboss8</server.distribution>
+    <server.distribution>wildfly9</server.distribution>
   </properties>
 
   <build>

@@ -1,0 +1,5 @@
+#
+# Set the support of the JSP compiler to Java 8
+#
+
+/subsystem=undertow/servlet-container=default/setting=jsp:write-attribute(name=source-vm, value=1.8)
