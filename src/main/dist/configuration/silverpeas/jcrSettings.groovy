@@ -12,9 +12,9 @@ import java.nio.file.Path
 
 log.info 'Configure the JCR repository'
 
-Path jcrHomePath = service.getPath(settings.JCR_HOME)
-Path jcrConfigurationPath = service.getPath("${settings.JCR_HOME}/repository.xml")
-Path jcrConfigurationTemplatePath = service.getPath("${settings.CONFIGURATION_HOME}/silverpeas/resources/repository.jcr")
+Path jcrHomePath = settings.JCR_HOME.asPath()
+Path jcrConfigurationPath = "${settings.JCR_HOME}/repository.xml".asPath()
+Path jcrConfigurationTemplatePath = "${settings.CONFIGURATION_HOME}/silverpeas/resources/repository.jcr".asPath()
 
 SAXParserFactory factory = javax.xml.parsers.SAXParserFactory.newInstance()
 factory.validating = false
@@ -29,9 +29,9 @@ if (!Files.exists(jcrConfigurationPath)) {
 }
 
 /* case of an old workspace named jackrabbit */
-Path oldWorkspacePath = service.getPath("${settings.JCR_HOME}/workspaces/jackrabbit")
+Path oldWorkspacePath = "${settings.JCR_HOME}/workspaces/jackrabbit".asPath()
 if (Files.exists(oldWorkspacePath)) {
-  Path newWorkspacePath = service.getPath("${settings.JCR_HOME}/workspaces/silverpeas")
+  Path newWorkspacePath = "${settings.JCR_HOME}/workspaces/silverpeas".asPath()
   Files.move(oldWorkspacePath, newWorkspacePath)
   def jcrWorkspaceConf = new XmlSlurper(factory.newSAXParser())
       .parse(new File('workspace.xml', newWorkspacePath.toFile()))

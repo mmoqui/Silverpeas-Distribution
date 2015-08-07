@@ -4,5 +4,5 @@
  */
 
 /* Creates the hidden Silverpeas directory for important stuffs if it doesn't already exist */
-service.createDirectory(service.getPath(settings.HIDDEN_SILVERPEAS_DIR),
+service.createDirectory(settings.HIDDEN_SILVERPEAS_DIR.asPath(),
     [readable: true, writable: true, executable: true, hidden: true])
