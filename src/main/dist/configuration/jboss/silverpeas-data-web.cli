@@ -2,6 +2,8 @@
 # Add SILVERPEAS_DATA_WEB as a new deployments location for JBoss
 #
 
-#check: /subsystem=deployment-scanner/scanner=silverpeas-data-web
+if (outcome == success) of /subsystem=deployment-scanner/scanner=silverpeas-data-web:read-resource
+  /subsystem=deployment-scanner/scanner=silverpeas-data-web:remove
+end-if
 
 /subsystem=deployment-scanner/scanner=silverpeas-data-web:add(path=${SILVERPEAS_DATA_WEB})

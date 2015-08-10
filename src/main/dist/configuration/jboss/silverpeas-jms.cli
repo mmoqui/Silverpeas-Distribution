@@ -5,13 +5,26 @@
 #
 # JMS queues definition
 #
-jms-queue add --queue-address=notifications --entries=queue/notificationsQueue
-jms-queue add --queue-address=statistics --entries=queue/statisticsQueue
+if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-queue=notifications:read-resource
+  jms-queue add --queue-address=notifications --entries=queue/notificationsQueue
+end-if
+
+if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-queue=statistics:read-resource
+  jms-queue add --queue-address=statistics --entries=queue/statisticsQueue
+end-if
 
 #
 # JMS topics definition
 #
-jms-topic add --topic-address=comments --entries=topic/comments
-jms-topic add --topic-address=wysiwyg --entries=topic/wysiwyg
-jms-topic add --topic-address=attachments --entries=topic/attachments
+if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic=comments:read-resource
+  jms-topic add --topic-address=comments --entries=topic/comments
+end-if
+
+if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic=wysiwyg:read-resource
+  jms-topic add --topic-address=wysiwyg --entries=topic/wysiwyg
+end-if
+
+if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic=attachments:read-resource
+  jms-topic add --topic-address=attachments --entries=topic/attachments
+end-if
 
