@@ -10,11 +10,16 @@ group = 'org.silverpeas'
 
 apply from: "${System.getenv('SILVERPEAS_HOME')}/bin/silverpeas.gradle"
 apply plugin: 'maven'
+apply plugin: 'net.linguica.maven-settings'
 apply plugin: 'silversetup'
 
+/**
+ * Where to find the software components that made Silverpeas.
+ */
 repositories {
   mavenLocal()
   maven {
+    name 'silverpeas'
     url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
   }
   flatDir {
@@ -22,8 +27,12 @@ repositories {
   }
 }
 
+/**
+ * Dependencies required by the installation and configuration processes.
+ */
 buildscript {
   dependencies {
+    classpath "net.linguica.gradle:maven-settings-plugin:0.4"
     classpath "org.silverpeas:silverpeas-setup:${project.version}"
     classpath fileTree(dir: 'lib', include: ['*.jar'])
   }
@@ -31,6 +40,9 @@ buildscript {
     mavenLocal()
     maven {
       url 'http://www.silverpeas.org/nexus/content/groups/silverpeas'
+    }
+    maven {
+      url 'https://plugins.gradle.org/m2/'
     }
     flatDir {
       dirs 'lib'
@@ -59,6 +71,10 @@ project.ext {
   jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
 }
 
+/**
+ * Generates the final WAR archive of the Silverpeas platform.
+ * @param log The logger to use while generating the WAR archive.
+ */
 def generateSilverpeasFinalWar(Logger log) {
   // merge all of the web.xml from the different WARs into a single one
   log.info "Merge all the web.xml into a single one"
@@ -136,8 +152,8 @@ clean {
 
 /**
  * Fetches the different parts of Silverpeas as well their dependencies from the remote Silverpeas
- * repository and prepares the build of the Silverpeas distribution. It is in this step the
- * Silverpeas application is assembled.
+ * repository and prepares the build of the Silverpeas distribution. It is during this step the
+ * Silverpeas platform is assembled.
  */
 assemble {
   outputs.dir project.ext.distDir
@@ -202,6 +218,7 @@ assemble {
 
 /**
  * Configures both the runtime (JBoss) and the Silverpeas distribution.
+ * It depends on the assemble task (assemble will be performed first).
  */
 task configure(dependsOn: assemble) {
   description 'Configures both JBoss and Silverpeas'
@@ -225,6 +242,11 @@ task configure(dependsOn: assemble) {
   }
 }
 
+/**
+ * Installs Silverpeas and its dependencies into Wildfly/JBoss.
+ * It depends both of the configuration and of the migration tasks, meaning they will be first
+ * performed. (The migration task is provided by the silverpeas-setup plugin).
+ */
 task install(dependsOn: [configure, migration]) {
   description 'Installs Silverpeas into JBoss and starts it. If -Pdebug is passed then JBoss is started in debug mode.'
   group 'Build'
@@ -269,6 +291,10 @@ task install(dependsOn: [configure, migration]) {
   }
 }
 
+/**
+ * Undeploys and then deploys all the software components in the SILVERPEAS_HOME/deployments
+ * directory into JBossWildfly/JBoss. Warning: the SQL driver isn't concerned by this task.
+ */
 task redeploy {
   description 'Redeploy all the artifacts in the SILVERPEAS_HOME/deployments folder'
   group 'Silverpeas'
@@ -307,7 +333,7 @@ task start {
 }
 
 /**
- * Starts Silverpeas in debug mode.
+ * Starts Silverpeas in debugging mode.
  */
 task debug {
   description 'Starts Silverpeas in debug mode. The debug port can be passed by the -Pport argument (default 5005)'
@@ -350,6 +376,10 @@ task status {
   }
 }
 
+/**
+ * Regenerates the WAR archive of the Silverpeas platform and deploys it into Wildfly/JBoss running
+ * in debugging mode. This task is for developers and not for production.
+ */
 task reload {
   description 'Reassembles the Silverpeas war application and deploys it in debug mode. The debug port can be passed by the -Pport argument (default 5005)'
   group 'Silverpeas Development'
