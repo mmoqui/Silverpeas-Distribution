@@ -5,6 +5,12 @@ configurations {
   silverpeas {
     description = 'Silverpeas Modules'
     transitive = true
+    /* Only to load SNAPSHOT versions of Silverpeas
+    resolutionStrategy {
+      cacheDynamicVersionsFor 0, 'seconds'
+      cacheChangingModulesFor 0, 'seconds'
+    }
+    */
   }
 }
 
