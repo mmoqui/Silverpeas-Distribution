@@ -224,18 +224,6 @@ task configure(dependsOn: assemble) {
   description 'Configures both JBoss and Silverpeas'
   group 'Build'
   Logger log = Logger.getLogger('configure')
-  doFirst {
-    if (project.ext.deploymentsHome.exists()) {
-      JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-          .redirectOutputTo(project.ext.jbossOutputLog)
-          .useLogger(log)
-      project.ext.deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
-        log.info "Uninstall ${artifact.name}"
-        jboss.undeploy(artifact.name)
-        log.info "Uninstall ${artifact.name}: [OK]"
-      }
-    }
-  }
   doLast {
     tasks.configureJBoss.execute()
     tasks.configureSilverpeas.execute()
@@ -246,30 +234,20 @@ task configure(dependsOn: assemble) {
  * Installs Silverpeas and its dependencies into Wildfly/JBoss.
  * It depends both of the configuration and of the migration tasks, meaning they will be first
  * performed. (The migration task is provided by the silverpeas-setup plugin).
+ * The installation, as well as the configuration task
  */
 task install(dependsOn: [configure, migration]) {
-  description 'Installs Silverpeas into JBoss and starts it. If -Pdebug is passed then JBoss is started in debug mode.'
+  description 'Installs Silverpeas into JBoss/Wildfly'
   group 'Build'
   Logger log = Logger.getLogger('install')
   JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
       .redirectOutputTo(project.ext.jbossOutputLog)
       .useLogger(log)
   doFirst {
-    if (project.ext.has('debug')) {
-      if (project.ext.debug) {
-        jboss.forceDebugMode(project.ext.debug as int)
-      } else {
-        jboss.forceDebugMode()
-      }
-    }
-    /*
-     * There is a bug with the Wildfly reloading: it breaks out the MDB deployment!
-     * So, in the case there were a reload during the configuration, we stop JBoss/Wildfly before
-     * deploying any artifact.
-     */
     if (jboss.isStartingOrRunning()) {
       jboss.stop()
     }
+    jboss.start(adminOnly: true)
   }
   doLast {
     copy {
@@ -281,12 +259,15 @@ task install(dependsOn: [configure, migration]) {
     }
     try {
       project.ext.deploymentsHome.listFiles().sort().each { artifact ->
-        log.info "Installation of ${artifact.name}"
+        log.info "(Re)Installation of ${artifact.name}"
+        jboss.undeploy(artifact.name)
         jboss.deploy(artifact.path)
-        log.info "Installation of ${artifact.name}: [OK]"
+        log.info "(Re)Installation of ${artifact.name}: [OK]"
       }
     } catch (RuntimeException ex) {
       throw new GradleScriptException("Installation Failure", ex)
+    } finally {
+      jboss.stop()
     }
   }
 }
@@ -302,9 +283,11 @@ task redeploy {
   JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
       .redirectOutputTo(project.ext.jbossOutputLog)
   doFirst {
-    project.ext.deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
-      println "Undeploy ${artifact.name}..."
-      jboss.undeploy(artifact.name)
+    jboss.doWhenRunning {
+      project.ext.deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
+        println "Undeploy ${artifact.name}..."
+        jboss.undeploy(artifact.name)
+      }
     }
   }
   doLast {
@@ -395,9 +378,6 @@ task reload {
       println ' done'
     }
 
-    int port = (project.ext.has('port') ? project.ext.port as int:5005)
-    jboss.forceDebugMode(port)
-
     // deletes the Silverpeas distribution directory
     ant.delete(dir: project.ext.distDir.path, includeemptydirs: true)
   }
@@ -422,6 +402,10 @@ task reload {
       from(file("${buildDir.path}/silverpeas.war"))
       into project.ext.deploymentsHome
     }
+
+    int port = (project.ext.has('port') ? project.ext.port as int:5005)
+    jboss.debug(port)
+
     try {
       log.info "Undeploy silverpeas.war..."
       jboss.undeploy('silverpeas.war')

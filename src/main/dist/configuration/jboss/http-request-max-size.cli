@@ -1,0 +1,8 @@
+#
+# Change the maximum size of an HTTP request Undertow can read
+#
+
+if (result != 0L) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name=max-post-size)
+  /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=max-post-size, value=0)
+end-if
+

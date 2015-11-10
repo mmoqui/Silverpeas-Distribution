@@ -1,7 +1,8 @@
 #
-# Add a non-XA datasource as the main persistence backend for Silverpeas
+# Add a non-XA datasource as the main persistence backend for the JCR used by Silverpeas
 #
 
+# If already set, remove it so that the datasource can be updated
 if (outcome == success) of /subsystem=datasources/data-source=DocumentStore:read-resource
   /subsystem=datasources/data-source=DocumentStore:remove
 end-if
@@ -12,7 +13,6 @@ data-source add \
   --connection-url=${DB_URL} \
   --jndi-name=java:/datasources/DocumentStore \
   --jta=false \
-  --enabled=true \
   --use-java-context=true \
   --user-name=${DB_USER} \
   --password=${DB_PASSWORD} \
