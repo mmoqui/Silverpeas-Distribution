@@ -419,7 +419,6 @@ task reload {
         }
       }
     }
-    
     generateSilverpeasFinalWar(log)
 
     try {

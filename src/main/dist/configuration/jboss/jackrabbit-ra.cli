@@ -3,6 +3,9 @@
 #
 
 if (outcome != success) of /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar:read-resource
+  # Start batching commands
+   batch
+
   /subsystem=jca/archive-validation=archive-validation:write-attribute(name=enabled, value=false)
 
   /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar:add(archive=jackrabbit-jca.rar,transaction-support=XATransaction)
@@ -13,6 +16,9 @@ if (outcome != success) of /subsystem=resource-adapters/resource-adapter=jackrab
   /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=ConfigFile/:add(value=${JCR_HOME}/repository.xml)
 
   /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar/connection-definitions=cfName/config-properties=HomeDir/:add(value=${JCR_HOME})
+
+  # Run the batch commands
+  run-batch
 end-if
 
 
