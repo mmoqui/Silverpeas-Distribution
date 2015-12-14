@@ -55,6 +55,7 @@ buildscript {
  */
 silversetup {
   driversDir = "${buildDir}/drivers"
+  developmentMode = false // mode for developers only (be caution: don't use this mode in production environment)
   logging {
     logDir = "${project.silversetup.silverpeasHome}/log"
     defaultLevel = project.logLevel
@@ -117,9 +118,13 @@ def generateSilverpeasFinalWar(Logger log) {
   }
   XmlUtil.serialize(persistence, new FileWriter(xmlPersistenceFile.path))
 
-  log.info "Generate silverpeas.war"
-  ant.zip(destfile: "${buildDir.path}/silverpeas.war") {
-    fileset(dir: project.ext.distDir.path)
+  if (!silversetup.developmentMode) {
+    log.info "Generate silverpeas.war"
+    ant.zip(destfile: "${buildDir.path}/silverpeas.war") {
+      fileset(dir: project.ext.distDir.path)
+    }
+  } else {
+    log.info "silverpeas exploded war done"
   }
 }
 
@@ -139,6 +144,7 @@ clean {
   }
   doLast {
     ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: '*.log')
+    ant.delete(dir: "${silversetup.silverpeasHome}/deployments", includes: '*')
     ant.delete(dir: "${silversetup.silverpeasHome}/silvertrace", includeemptydirs: true)
     ant.delete(dir: "${silversetup.silverpeasHome}/migrations", includeemptydirs: true)
     ant.delete(dir: "${silversetup.silverpeasHome}/dbRepository", includeemptydirs: true)
@@ -271,9 +277,17 @@ task install(dependsOn: [configure, migration]) {
     try {
       project.ext.deploymentsHome.listFiles().sort().each { artifact ->
         log.info "(Re)Installation of ${artifact.name}"
-        jboss.undeploy(artifact.name)
-        jboss.deploy(artifact.path)
+        jboss.remove(artifact.name)
+        jboss.add(artifact.path)
+        jboss.deploy(artifact.name)
         log.info "(Re)Installation of ${artifact.name}: [OK]"
+      }
+      if (silversetup.developmentMode) {
+        log.info '(Re)Installation of silverpeas.war as exploded (dev mode)'
+        jboss.remove('silverpeas.war')
+        jboss.add(project.ext.distDir.path, 'silverpeas.war')
+        jboss.deploy('silverpeas.war')
+        log.info '(Re)Installation of silverpeas.war as exploded (dev mode): [OK]'
       }
     } catch (RuntimeException ex) {
       throw new GradleScriptException("Installation Failure", ex)
@@ -371,24 +385,20 @@ task status {
 }
 
 /**
- * Regenerates the WAR archive of the Silverpeas platform and deploys it into Wildfly/JBoss running
- * in debugging mode. This task is for developers and not for production.
+ * Regenerates Silverpeas and redeploys it into a running
+ * Wildfly/JBoss. This task is for developers and not for production. Enable only in dev mode.
  */
 task reload {
-  description 'Reassembles the Silverpeas war application and deploys it in debug mode. The debug port can be passed by the -Pport argument (default 5005)'
+  description 'Reassembles the Silverpeas war application and deploys it again while JBoss/Wildfly is running (only in dev mode)'
   group 'Silverpeas Development'
+  onlyIf { silversetup.developmentMode }
   Logger log = Logger.getLogger('reload')
   JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
       .redirectOutputTo(project.ext.jbossOutputLog)
       .useLogger(log)
   doFirst {
-    // stops JBoss
-    if (jboss.isStartingOrRunning()) {
-      print 'WARNING: JBoss is running, stop it...'
-      jboss.stop()
-      println ' done'
-    }
-
+    log.info 'Undeploy silverpeas.war...'
+    jboss.undeploy('silverpeas.war')
     // deletes the Silverpeas distribution directory
     ant.delete(dir: project.ext.distDir.path, includeemptydirs: true)
   }
@@ -406,22 +416,12 @@ task reload {
         }
       }
     }
-
+    
     generateSilverpeasFinalWar(log)
 
-    copy {
-      from(file("${buildDir.path}/silverpeas.war"))
-      into project.ext.deploymentsHome
-    }
-
-    int port = (project.ext.has('port') ? project.ext.port as int:5005)
-    jboss.debug(port)
-
     try {
-      log.info "Undeploy silverpeas.war..."
-      jboss.undeploy('silverpeas.war')
-      log.info "Deploy silverpeas.war..."
-      jboss.deploy("${project.ext.deploymentsHome.path}/silverpeas.war")
+      log.info 'Deploy silverpeas.war...'
+      jboss.deploy('silverpeas.war')
     } catch (RuntimeException ex) {
       throw new GradleScriptException("Reload Failure", ex)
     }

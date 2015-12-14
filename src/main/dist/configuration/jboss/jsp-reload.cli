@@ -1,0 +1,7 @@
+#
+# Automatic recompilation of JSP in development mode
+#
+
+/subsystem=undertow/servlet-container=default/setting=jsp:write-attribute(name=development, value=${DEV_MODE}
+
+
