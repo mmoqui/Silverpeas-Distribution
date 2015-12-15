@@ -145,7 +145,7 @@ clean {
   }
   doLast {
     ant.delete(dir: project.ext.distDir.path, includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: '*.log')
+    ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: 'build*.log jboss_output.log')
     ant.delete(dir: "${silversetup.silverpeasHome}/deployments", includes: '*')
     ant.delete(dir: "${silversetup.silverpeasHome}/silvertrace", includeemptydirs: true)
     ant.delete(dir: "${silversetup.silverpeasHome}/migrations", includeemptydirs: true)
