@@ -67,7 +67,8 @@ silversetup {
  * Global project properties.
  */
 project.ext {
-  distDir = new File('dist', buildDir)
+  distDir = (System.getenv('SILVERPEAS_DIST_DIR') != null ?
+      new File(System.getenv('SILVERPEAS_DIST_DIR')):new File('dist', buildDir))
   deploymentsHome = new File("${project.silversetup.silverpeasHome}/deployments")
   jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
 }
