@@ -2,8 +2,7 @@
 version = '${project.version}'
 
 configurations {
-  silverpeas {
-    description = 'Silverpeas Modules'
+  all {
     transitive = true
     /* Only to load SNAPSHOT versions of Silverpeas
     resolutionStrategy {
@@ -12,15 +11,11 @@ configurations {
     }
     */
   }
+  silverpeas {
+    description = 'Silverpeas Modules'
+  }
   library {
     description = 'Tiers Libraries to include into Silverpeas (jar only)'
-    transitive = true
-    /* Only to load SNAPSHOT versions of libraries
-    resolutionStrategy {
-      cacheDynamicVersionsFor 0, 'seconds'
-      cacheChangingModulesFor 0, 'seconds'
-    }
-    */
   }
 }
 
