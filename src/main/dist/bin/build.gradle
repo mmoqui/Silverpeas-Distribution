@@ -55,7 +55,8 @@ buildscript {
  */
 silversetup {
   driversDir = "${buildDir}/drivers"
-  developmentMode = false // mode for developers only (be caution: don't use this mode in production environment)
+  // mode for developers only (be caution: don't use this mode in production environment).
+  developmentMode = (System.getenv('SILVERPEAS_DEV_MODE') != null ? System.getenv('SILVERPEAS_DEV_MODE') : false)
   logging {
     logDir = "${project.silversetup.silverpeasHome}/log"
     defaultLevel = project.logLevel
