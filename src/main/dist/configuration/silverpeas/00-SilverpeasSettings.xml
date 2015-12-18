@@ -33,6 +33,10 @@
       <parameter key="languages">${SILVERPEAS_CONTENT_LANGUAGES}</parameter>
     </configfile>
 
+    <configfile name="util/logging/silverpeasModule.properties">
+      <parameter key="module.level">${SILVERPEAS_LOGGING_LEVEL}</parameter>
+    </configfile>
+
     <configfile name="peasCore/SessionManager.properties">
       <parameter key="scheduledSessionManagementTimeStamp">2</parameter>
       <parameter key="userSessionTimeout">10</parameter>
@@ -103,17 +107,6 @@
       <parameter key="SMTPUser">${SMTP_USER}</parameter>
       <parameter key="SMTPPwd">${SMTP_PASSWORD}</parameter>
       <parameter key="SMTPSecure">${SMTP_SECURE}</parameter>
-    </configfile>
-
-    <configfile name="silvertrace/settings/silverLog.properties">
-       <parameter key="pathSilverLog">${SILVERPEAS_LOG}</parameter>
-       <parameter key="LogDir">${SILVERPEAS_LOG}</parameter>
-       <parameter key="appender0.fileName">${SILVERPEAS_LOG}/journal.txt</parameter>
-     </configfile>
-
-    <configfile name="silvertrace/settings/silverTrace.properties">
-      <parameter key="pathSilverTrace">${SILVERPEAS_HOME}/silvertrace</parameter>
-      <parameter key="ErrorDir">${SILVERPEAS_LOG}</parameter>
     </configfile>
 
     <configfile name="jobManagerPeas/settings/jobManagerPeasSettings.properties">

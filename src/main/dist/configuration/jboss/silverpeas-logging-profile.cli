@@ -1,0 +1,49 @@
+#
+# Define a peculiar logging profile for Silverpeas in JBoss/Wildfly
+#
+
+if (outcome == success) of /subsystem=logging/logging-profile=silverpeas:read-resource
+  /subsystem=logging/logging-profile=silverpeas:remove
+end-if
+
+# Start batching commands
+batch
+
+# Add the logging profile Silverpeas
+/subsystem=logging/logging-profile=silverpeas:add
+
+# Add the periodic rotating file handlers
+# For global traces
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=TRACE_LOG_FILE:add(level="ALL",suffix=".yyyy.MM.dd", file={"path"=>"${SILVERPEAS_LOG}/silverpeas-trace.log"}, append=true)
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=TRACE_LOG_FILE:write-attribute(name=autoflush, value=true)
+
+# For errors
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=ERROR_LOG_FILE:add(level="ERROR",suffix=".yyyy.MM.dd", file={"path"=>"${SILVERPEAS_LOG}/silverpeas-error.log"}, append=true)
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=ERROR_LOG_FILE:write-attribute(name=autoflush, value=true)
+
+# For groups synchronization with remote directory
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=GROUP_SYNC_LOG_FILE:add(level="INFO",suffix=".yyyy.MM.dd", file={"path"=>"${SILVERPEAS_LOG}/silverpeas-group_sync.log"}, append=true)
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=GROUP_SYNC_LOG_FILE:write-attribute(name=autoflush, value=true)
+
+# For full domain synchronization with remote directory
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=DOMAIN_SYNC_LOG_FILE:add(level="INFO",suffix=".yyyy.MM.dd", file={"path"=>"${SILVERPEAS_LOG}/silverpeas-domain_sync.log"}, append=true)
+/subsystem=logging/logging-profile=silverpeas/periodic-rotating-file-handler=DOMAIN_SYNC_LOG_FILE:write-attribute(name=autoflush, value=true)
+
+# Configure the logging asynchronous handlers (by default they aren't used; they are defined in the case some users want asynchronous logging)
+/subsystem=logging/logging-profile=silverpeas/async-handler=ASYNC_TRACE_LOG_HANDLER:add(level="ALL",queue-length=1048576,overflow-action=BLOCK,subhandlers=["TRACE_LOG_FILE"])
+/subsystem=logging/logging-profile=silverpeas/async-handler=ASYNC_ERROR_LOG_HANDLER:add(level="ERROR",queue-length=1048576,overflow-action=BLOCK,subhandlers=["ERROR_LOG_FILE"])
+
+# Create a logger for Silverpeas: it will take all the texts coming from the Silverpeas root category.
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas:add(level=${SILVERPEAS_LOGGING_LEVEL},handlers=[ASYNC_TRACE_LOG_HANDLER,ASYNC_ERROR_LOG_HANDLER])
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas:write-attribute(name=use-parent-handlers, value=false)
+
+# Create a logger for groups synchronization
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.SynchroGroup:add(level="INFO",handlers=[GROUP_SYNC_LOG_FILE])
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.SynchroGroup:write-attribute(name=use-parent-handlers, value=false)
+
+# Create a logger for domain synchronization
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.Synchro:add(level="${SILVERPEAS_LOGGING_LEVEL}",handlers=[DOMAIN_SYNC_LOG_FILE])
+/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.Synchro:write-attribute(name=use-parent-handlers, value=false)
+
+# Run the batch commands
+run-batch
