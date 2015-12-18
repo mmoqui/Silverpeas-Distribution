@@ -2,6 +2,8 @@ import groovy.xml.XmlUtil
 import org.silverpeas.setup.api.Logger
 import org.silverpeas.setup.configuration.JBossServer
 
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -56,7 +58,7 @@ buildscript {
 silversetup {
   driversDir = "${buildDir}/drivers"
   // mode for developers only (be caution: don't use this mode in production environment).
-  developmentMode = (System.getenv('SILVERPEAS_DEV_MODE') != null ? System.getenv('SILVERPEAS_DEV_MODE') : false)
+  developmentMode = (System.getenv('SILVERPEAS_DEV_MODE') != null ? System.getenv('SILVERPEAS_DEV_MODE') as boolean : false)
   logging {
     logDir = "${project.silversetup.silverpeasHome}/log"
     defaultLevel = project.logLevel
@@ -130,7 +132,6 @@ def generateSilverpeasFinalWar(Logger log) {
   }
 }
 
-
 /**
  * Cleans all the artifacts produced by the build of a Silverpeas distribution.
  */
@@ -165,9 +166,14 @@ clean {
  * Silverpeas platform is assembled.
  */
 assemble {
-  outputs.dir project.ext.distDir
-  outputs.dir file(new File(project.silversetup.driversDir))
-  outputs.file file(new File('silverpeas.war', buildDir))
+  outputs.upToDateWhen {
+    boolean ok = project.ext.distDir.exists() &&
+        Files.exists(Paths.get(silversetup.driversDir))
+    if (!silversetup.developmentMode) {
+      ok = ok && Files.exists(Paths.get(buildDir.path, 'silverpeas.war'))
+    }
+    return ok
+  }
   Logger log = Logger.getLogger('assemble')
   doFirst {
     // fetch all the artifacts and explode some of them into the output directories
