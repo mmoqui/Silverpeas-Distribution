@@ -40,7 +40,7 @@
   </repositories>
 
   <properties>
-    <server.distribution>wildfly9</server.distribution>
+    <server.distribution>wildfly10</server.distribution>
   </properties>
 
   <build>
