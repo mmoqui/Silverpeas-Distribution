@@ -83,7 +83,7 @@ project.ext {
 def generateSilverpeasFinalWar(Logger log) {
   // merge all of the web.xml from the different WARs into a single one
   log.info "Merge all the web.xml into a single one"
-  def mainWebXmlFileName = "web-silverpeas-core-war-${project.version}.war.xml"
+  def mainWebXmlFileName = "web-silverpeas-core-war-''${project.version}.war.xml"
   def mainWebXmlFile = new File("${project.ext.distDir.path}/WEB-INF/${mainWebXmlFileName}")
   def mainWebXml = new XmlSlurper(false, false).parse(mainWebXmlFile)
   new File('WEB-INF', project.ext.distDir).listFiles(new FilenameFilter() {
