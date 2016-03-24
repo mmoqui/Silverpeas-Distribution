@@ -42,7 +42,7 @@
       <parameter key="userSessionTimeout">10</parameter>
     </configfile>
 
-    <configfile name="beans/admin/admin.properties">
+    <configfile name="admin/admin.properties">
       <parameter key="DefaultDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
       <parameter key="AdministratorEMail">${SILVERPEAS_ADMIN_EMAIL}</parameter>
       <parameter key="EntrepriseClientSpaceId">1</parameter>
