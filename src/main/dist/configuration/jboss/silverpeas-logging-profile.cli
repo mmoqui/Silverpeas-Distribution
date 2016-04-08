@@ -34,16 +34,16 @@ batch
 /subsystem=logging/logging-profile=silverpeas/async-handler=ASYNC_ERROR_LOG_HANDLER:add(level="ERROR",queue-length=1048576,overflow-action=BLOCK,subhandlers=["ERROR_LOG_FILE"])
 
 # Create a logger for Silverpeas: it will take all the texts coming from the Silverpeas root category.
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas:add(level=${SILVERPEAS_LOGGING_LEVEL},handlers=[ASYNC_TRACE_LOG_HANDLER,ASYNC_ERROR_LOG_HANDLER])
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas:write-attribute(name=use-parent-handlers, value=false)
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas:add(level=${SILVERPEAS_LOGGING_LEVEL},handlers=[ASYNC_TRACE_LOG_HANDLER,ASYNC_ERROR_LOG_HANDLER])
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas:write-attribute(name=use-parent-handlers, value=false)
 
-# Create a logger for groups synchronization
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.SynchroGroup:add(level="INFO",handlers=[GROUP_SYNC_LOG_FILE])
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.SynchroGroup:write-attribute(name=use-parent-handlers, value=false)
+# Create a logger for groups synchronization in domain
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas.core.admin.domain.synchro.group:add(level="INFO",handlers=[GROUP_SYNC_LOG_FILE])
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas.core.admin.domain.synchro.group:write-attribute(name=use-parent-handlers, value=false)
 
-# Create a logger for domain synchronization
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.Synchro:add(level="${SILVERPEAS_LOGGING_LEVEL}",handlers=[DOMAIN_SYNC_LOG_FILE])
-/subsystem=logging/logging-profile=silverpeas/logger=Silverpeas.Core.Admin.Synchro:write-attribute(name=use-parent-handlers, value=false)
+# Create a logger for full domain synchronization
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas.core.admin.domain.synchro.domain:add(level="${SILVERPEAS_LOGGING_LEVEL}",handlers=[DOMAIN_SYNC_LOG_FILE])
+/subsystem=logging/logging-profile=silverpeas/logger=silverpeas.core.admin.domain.synchro.domain:write-attribute(name=use-parent-handlers, value=false)
 
 # Run the batch commands
 run-batch
