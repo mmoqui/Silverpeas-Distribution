@@ -23,12 +23,6 @@
       <parameter key="securityPath">${HIDDEN_SILVERPEAS_DIR}</parameter>
     </configfile>
 
-    <configfile name="util/jcr.properties">
-      <parameter key="jcr.configuration.persistence.manager">${JACKRABBIT_PERSISTENCE_MANAGER}</parameter>
-      <parameter key="jcr.home.dir">${SILVERPEAS_HOME}/jcr</parameter>
-      <parameter key="schema">${DB_SCHEMA}</parameter>
-    </configfile>
-
     <configfile name="util/i18n.properties">
       <parameter key="languages">${SILVERPEAS_CONTENT_LANGUAGES}</parameter>
     </configfile>
