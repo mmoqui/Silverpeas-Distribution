@@ -20,11 +20,3 @@ if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic
   jms-topic add --topic-address=comments --entries=topic/comments
 end-if
 
-if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic=wysiwyg:read-resource
-  jms-topic add --topic-address=wysiwyg --entries=topic/wysiwyg
-end-if
-
-if (outcome != success) of /subsystem=messaging/hornetq-server=default/jms-topic=attachments:read-resource
-  jms-topic add --topic-address=attachments --entries=topic/attachments
-end-if
-
