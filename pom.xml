@@ -75,7 +75,7 @@
         <version>1.0-beta-4</version>
         <executions>
           <execution>
-            <id>upload-packages</id>
+            <id>upload-package</id>
             <phase>install</phase>
             <goals>
               <goal>upload</goal>
@@ -83,7 +83,7 @@
             <configuration>
               <serverId>silverpeas_repository</serverId>
               <fromDir>${project.basedir}/target</fromDir>
-              <includes>*.zip,*.tar.gz</includes>
+              <includes>*.zip,*.zip.asc</includes>
               <excludes>pom.xml</excludes>
               <url>scp://www.silverpeas.org</url>
               <toDir>/var/www/files</toDir>
