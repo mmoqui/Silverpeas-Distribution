@@ -27,6 +27,10 @@
       <parameter key="languages">${SILVERPEAS_CONTENT_LANGUAGES}</parameter>
     </configfile>
 
+    <configfile name="personalization/settings/personalizationPeasSettings.properties">
+      <parameter key="DefaultLanguage">${SILVERPEAS_USER_LANGUAGE}</parameter>
+    </configfile>
+
     <configfile name="util/logging/silverpeasLogging.properties">
       <parameter key="level">${SILVERPEAS_LOGGING_LEVEL}</parameter>
     </configfile>
