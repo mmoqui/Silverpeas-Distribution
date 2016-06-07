@@ -189,7 +189,7 @@ assemble {
           into project.ext.distDir.path
         }
       } else if (a.name.endsWith("-configuration-''${project.version}.jar")) {
-        logger.info "Explode ${a.name} into ${project.silversetup.silverpeasHome}"
+        log.info "Explode ${a.name} into ${project.silversetup.silverpeasHome}"
         copy {
           from(zipTree(a))
           exclude '**/META-INF/**'
