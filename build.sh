@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 die() {
-  echo "Missing user credentials to push files into the silverpeas web site"
+  echo "Missing user login to push files into the silverpeas web site"
   exit 1
 }
 
