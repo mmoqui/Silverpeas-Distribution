@@ -96,6 +96,7 @@ def generateSilverpeasFinalWar(Logger log) {
     def aWebXml = new XmlSlurper(false, false).parse(it)
     aWebXml.'context-param'.each { elt -> mainWebXml.appendNode(elt) }
     aWebXml.'filter'.each { elt -> mainWebXml.appendNode(elt) }
+    aWebXml.'filter-mapping'.each { elt -> mainWebXml.appendNode(elt) }
     aWebXml.'listener'.each { elt -> mainWebXml.appendNode(elt) }
     aWebXml.'servlet'.each { elt -> mainWebXml.appendNode(elt) }
     aWebXml.'servlet-mapping'.each { elt -> mainWebXml.appendNode(elt) }
