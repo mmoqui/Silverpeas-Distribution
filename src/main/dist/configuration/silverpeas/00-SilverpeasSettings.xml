@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <silverpeas-settings product="Silverpeas">
 
+  <!-- CONFIGURATION PARAMETERS TEST -->
+  <test>
+    <parameter key="SILVERPEAS_ADMIN_EMAIL"/>
+  </test>
+
   <!-- PROPERTIES CONFIGURATION -->
   <fileset root="${SILVERPEAS_HOME}/properties/org/silverpeas/">
 
