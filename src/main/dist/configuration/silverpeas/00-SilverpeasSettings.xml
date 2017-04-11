@@ -4,10 +4,12 @@
   <!-- CONFIGURATION PARAMETERS TEST -->
   <test>
     <parameter key="SILVERPEAS_ADMIN_EMAIL"/>
+    <parameter key="SILVERPEAS_SENDER_NAME"/>
+    <parameter key="SILVERPEAS_SENDER_EMAIL"/>
   </test>
 
   <!-- PROPERTIES CONFIGURATION -->
-  <fileset root="${SILVERPEAS_HOME}/properties/org/silverpeas/">
+  <fileset root="${SILVERPEAS_HOME}/properties/org/silverpeas">
 
     <!-- Silverpeas Core properties configuration -->
 
@@ -16,6 +18,12 @@
       <parameter key="SILVERPEAS_DATA_WEB">${SILVERPEAS_DATA_WEB}</parameter>
       <parameter key="SILVERPEAS_TEMP">${SILVERPEAS_TEMP}</parameter>
       <parameter key="SILVERPEAS_LOG">${SILVERPEAS_LOG}</parameter>
+      <parameter key="http.proxyHost">${PROXY_HOST}</parameter>
+      <parameter key="http.proxyPort">${PROXY_PORT}</parameter>
+      <parameter key="http.nonProxyHosts">${NONPROXY_HOST}</parameter>
+      <parameter key="ftp.proxyHost">${PROXY_HOST}</parameter>
+      <parameter key="ftp.proxyPort">${PROXY_PORT}</parameter>
+      <parameter key="ftp.nonProxyHosts">${NONPROXY_HOST}</parameter>
     </configfile>
 
     <configfile name="general.properties">
@@ -41,8 +49,8 @@
 
     <configfile name="admin/admin.properties">
       <parameter key="DefaultDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
-      <parameter key="AdministratorEMail">${SILVERPEAS_ADMIN_EMAIL}</parameter>
-      <parameter key="EntrepriseClientSpaceId">1</parameter>
+      <parameter key="SenderName">${SILVERPEAS_SENDER_NAME}</parameter>
+      <parameter key="SenderEmail">${SILVERPEAS_SENDER_EMAIL}</parameter>
     </configfile>
 
     <configfile name="domains/domainSP.properties">
