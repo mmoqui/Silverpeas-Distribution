@@ -1,0 +1,8 @@
+#
+# Change the default value of the transactions' timeout in JBoss/Wildfly so that
+# the synchronizations of resources or the operations on a huge amount of data
+# cannot be canceled by the triggering of a transaction timeout.
+#
+
+/subsystem=transactions:write-attribute(name=default-timeout,value=${DB_JTA_TIMEOUT})
+
