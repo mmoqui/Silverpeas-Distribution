@@ -119,17 +119,7 @@
       <parameter key="IsToolsVisible">true</parameter>
     </configfile>
 
-    <configfile name="workflow/engine/castorSettings.properties">
-      <parameter key="CastorJDOFastDatabaseFileURL">
-        ${SILVERPEAS_HOME}/resources/instanceManager/fast_database.xml
-      </parameter>
-      <parameter key="CastorJDODatabaseFileURL">
-        ${SILVERPEAS_HOME}/resources/instanceManager/database.xml
-      </parameter>
-      <parameter key="CastorJDOLogFileURL">${SILVERPEAS_LOG}/castor.log</parameter>
-      <parameter key="CastorXMLMappingFileURL">
-        ${SILVERPEAS_HOME}/resources/modelManager/mapping.xml
-      </parameter>
+    <configfile name="workflow/engine/settings.properties">
       <parameter key="ProcessModelDir">${SILVERPEAS_DATA_HOME}/workflowRepository/</parameter>
     </configfile>
 
