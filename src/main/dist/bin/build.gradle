@@ -230,7 +230,10 @@ assemble {
     artifacts = configurations.library.files
     artifacts.each { a ->
       if (a.name.endsWith('.jar')) {
-        log.info "Tiers JAR library found: ${a.name}"
+        if (a.name.toLowerCase().indexOf('silverpeas') >= 0)
+          log.info "Silverpeas JAR library found: ${a.name}"
+        else
+          log.info "Tiers JAR library found: ${a.name}"
         copy {
           from file(a)
           into new File(project.ext.distDir.path, 'WEB-INF/lib')

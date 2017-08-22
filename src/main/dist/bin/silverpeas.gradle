@@ -1,4 +1,4 @@
-/* Silverpeas version */
+/* Silverpeas version to install */
 version = '${project.version}'
 
 configurations {
@@ -12,18 +12,19 @@ configurations {
     */
   }
   silverpeas {
+    /* a Silverpeas module is made up of a war and optionally a configuration archive */
     description = 'Silverpeas Modules'
   }
   library {
-    description = 'Tiers Libraries to include into Silverpeas (jar only)'
+    description = 'Specific Silverpeas or tiers libraries to include into Silverpeas (jar only)'
   }
 }
 
 /* Dependencies to fetch for making Silverpeas */
 dependencies {
   silverpeas "org.silverpeas:silverpeas-assembly:''${project.version}"
-  silverpeas fileTree(dir: 'lib', include: ['*.jar'])
+  library fileTree(dir: 'lib', include: ['*.jar'])
 }
 
-/* Log level for the Silverpeas build */
+/* Log level for the Silverpeas installation */
 project.ext.logLevel = org.gradle.api.logging.LogLevel.INFO
