@@ -230,13 +230,28 @@ assemble {
     artifacts = configurations.library.files
     artifacts.each { a ->
       if (a.name.endsWith('.jar')) {
-        if (a.name.toLowerCase().indexOf('silverpeas') >= 0)
-          log.info "Silverpeas JAR library found: ${a.name}"
-        else
-          log.info "Tiers JAR library found: ${a.name}"
-        copy {
-          from file(a)
-          into new File(project.ext.distDir.path, 'WEB-INF/lib')
+        if (a.name.startsWith('postgresql') || a.name.startsWith('jtds') ||
+            a.name.startsWith('ojdbc')) {
+          log.info "JDBC driver found: ${a.name}"
+          // h2 is already provided by JBoss >= 8
+          copy {
+            from(file(a)) {
+              String nameWithoutVersion = a.name
+              Matcher matching = pattern.matcher(a.name)
+              matching.each {
+                nameWithoutVersion = it[1] + it[3]
+              }
+              rename a.name, nameWithoutVersion
+            }
+            into project.silversetup.driversDir
+          }
+        } else {
+          String jartype = a.name.toLowerCase().indexOf('silverpeas') >= 0 ? 'Silverpeas':'Tiers'
+          log.info "${jartype} JAR library found: ${a.name}"
+          copy {
+            from file(a)
+            into new File(project.ext.distDir.path, 'WEB-INF/lib')
+          }
         }
       }
     }
