@@ -43,7 +43,7 @@ $ git push origin :VERSION_TO_RELEASE
 ```
     
 Once released, update in the pom.xml of the project the version of the dependencies on others Silverpeas projects for their new development version if necessary and commit the changes.
-(According to the dependencies (`Silverpeas-JCR-AccessControl` for example), the versions can be kept in their stable version until they haven't any change.)
+(According to the dependencies (`Silverpeas-JCR-AccessControl` for example), the versions can be kept in their stable version unless they have any change.)
 
 ```bash
 $ git commit -a --amend
@@ -133,10 +133,11 @@ Some relationship rules:
 
   * `silverpeas-dependencies-bom`, `silverpeas-test-dependencies-bom` and `Silverpeas-Project` form all of them a set.
     Any change in this set implies a release of the whole set at the same version.
-  * `Silverpeas-Core`, `Silverpeas-Components`, `Silverpeas-Assembly`, `Silverpeas-Setup`, and `Silverpeas-Distribution` form all them a set.
+  * `Silverpeas-Core`, `Silverpeas-Components`, `Silverpeas-Assembly`, `Silverpeas-Setup`, and `Silverpeas-Distribution` form all of them a set.
     Any change in this set implies a release of the whole set at the same version.
-    Generally speaking, this whole set depends on the change of `Silverpeas-Core` and of `Silverpeas-Components`.
-    If a change is required in `Silverpeas-Setup` or in `Silverpeas-Distribution`, their release will depend on the release of both `Silverpeas-Core` and of `Silverpeas-Components`.
+    Generally speaking, this whole set depends on the change in `Silverpeas-Core` and in `Silverpeas-Components`.
+    If a change is required in `Silverpeas-Setup` or in `Silverpeas-Distribution`, their release will be relative to the release of both `Silverpeas-Core` and of `Silverpeas-Components`.
+    Nevertheless, if a fix is required in `Silverpeas-Setup` or in `Silverpeas-Distribution`, the two can be released with a minor version independently of `Silverpeas-Core` and of `Silverpeas-Components` (in this case, don't forget to set explicitly the version of `Silverpeas-Setup` directly in the `build.gradle` of `Silverpeas-Distribution`).
 
 Some definitions:
 
