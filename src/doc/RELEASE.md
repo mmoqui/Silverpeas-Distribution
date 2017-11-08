@@ -14,7 +14,7 @@ The variables used in this document:
 First, update in the pom.xml of the project the version of the dependencies on others Silverpeas projects for their new stable version if necessary and commit the change:
 
 ```bash
-$ git commit -am "Update the SNAPSHOT dependencies to their stable version for the release NEXT_VERSION"
+$ git commit -am "Update the SNAPSHOT dependencies to their stable version for the release VERSION_TO_RELEASE"
 ```
 
 Second, prepare the release of the new version by specifying some the properties of the release:
