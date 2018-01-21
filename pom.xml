@@ -66,6 +66,7 @@
   </properties>
 
   <build>
+    <finalName>silverpeas-${project.version}-${server.distribution}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -86,7 +87,7 @@
               <appendAssemblyId>false</appendAssemblyId>
               <attach>false</attach>
               <skipAssembly>false</skipAssembly>
-              <finalName>silverpeas-${project.version}-${server.distribution}</finalName>
+              <finalName>${project.build.finalName}</finalName>
             </configuration>
           </execution>
         </executions>
@@ -120,6 +121,50 @@
             <version>3.0.0</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.finalName}.zip</file>
+                  <type>zip</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <configuration>
+          <keyname>${gpg.keyname}</keyname>
+          <passphraseServerId>${gpg.keyname}</passphraseServerId>
+          <gpgArguments>
+            <arg>-a</arg>
+            <arg>-b</arg>
+          </gpgArguments>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
