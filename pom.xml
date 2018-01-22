@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   <groupId>org.silverpeas</groupId>
   <artifactId>silverpeas-distribution</artifactId>
-  <version>6.0</version>
+  <version>6.0.1</version>
   <name>Distribution of Silverpeas ${project.version}</name>
   <description>
     It generates a distribution of Silverpeas ${project.version} for both Unix-like and Windows
@@ -80,7 +80,7 @@
   </distributionManagement>
 
   <properties>
-    <pre.release>6.0</pre.release>
+    <pre.release>6.0.1</pre.release>
     <server.distribution>wildfly10</server.distribution>
   </properties>
 
