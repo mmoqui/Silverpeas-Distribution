@@ -180,8 +180,20 @@ assemble {
     // fetch all the artifacts and explode some of them into the output directories
     Pattern pattern = ~/([a-zA-Z_\-]+)(-[0-9.]+[a-zA-Z0-9_\-.]*)(\.\w+)/
     def artifacts = configurations.silverpeas.files
+
+    // explode first the silverpeas core war so that other wars can be overwritten some of its
+    // files (required by some looks)
+    def silverpeasWar = artifacts.find { it.name.startsWith('silverpeas-core-war-') }
+    log.info "Explode ${silverpeasWar.name} into ${project.ext.distDir.path}"
+    copy {
+      from(zipTree(silverpeasWar)) {
+        rename 'web.xml', "web-${silverpeasWar.name}.xml"
+      }
+      into project.ext.distDir.path
+    }
+
     artifacts.each { a ->
-      if (a.name.endsWith('.war')) {
+      if (a.name.endsWith('.war') && !a.name.startsWith('silverpeas-core-war-')) {
         log.info "Explode ${a.name} into ${project.ext.distDir.path}"
         copy {
           from(zipTree(a)) {
