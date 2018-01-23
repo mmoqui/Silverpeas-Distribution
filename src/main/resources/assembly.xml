@@ -40,5 +40,12 @@
       <outputDirectory>log</outputDirectory>
       <directory>src/main/dist/log</directory>
     </fileSet>
+    <fileSet>
+      <outputDirectory>.</outputDirectory>
+      <directory>src/main/dist</directory>
+      <includes>
+        <include>BUILD</include>
+      </includes>
+    </fileSet>
   </fileSets>
 </assembly>
