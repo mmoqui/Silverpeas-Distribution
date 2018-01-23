@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2000 - 2017 Silverpeas
+    Copyright (C) 2000 - 2018 Silverpeas
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -27,11 +27,6 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.silverpeas</groupId>
-    <artifactId>silverpeas-project</artifactId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
 
   <packaging>pom</packaging>
   <groupId>org.silverpeas</groupId>
@@ -65,16 +60,38 @@
     </repository>
   </repositories>
 
+  <distributionManagement>
+    <repository>
+      <id>silverpeas</id>
+      <name>Repository Silverpeas</name>
+      <layout>default</layout>
+      <url>http://www.silverpeas.org/nexus/content/repositories/mmoqui-repo/</url>
+    </repository>
+    <snapshotRepository>
+      <id>silverpeas-snapshots</id>
+      <name>Snapshots Repository Silverpeas</name>
+      <layout>default</layout>
+      <url>http://www.silverpeas.org/nexus/content/repositories/mmoqui-repo/</url>
+    </snapshotRepository>
+    <site>
+      <id>silverpeas_repository</id>
+      <url>scp://www.silverpeas.org/var/www/docs</url>
+    </site>
+  </distributionManagement>
+
   <properties>
+    <!-- property used by the CI to both deploy a build version and release the next stable version -->
+    <next.release>6.0</next.release>
     <server.distribution>wildfly10</server.distribution>
   </properties>
 
   <build>
+    <finalName>silverpeas-${project.version}-${server.distribution}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.4</version>
+        <version>2.6</version>
         <executions>
           <execution>
             <id>package-distribution</id>
@@ -90,7 +107,7 @@
               <appendAssemblyId>false</appendAssemblyId>
               <attach>false</attach>
               <skipAssembly>false</skipAssembly>
-              <finalName>silverpeas-${project.version}-${server.distribution}</finalName>
+              <finalName>${project.build.finalName}</finalName>
             </configuration>
           </execution>
         </executions>
@@ -98,7 +115,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>wagon-maven-plugin</artifactId>
-        <version>1.0-beta-4</version>
+        <version>1.0</version>
         <executions>
           <execution>
             <id>upload-package</id>
@@ -111,7 +128,7 @@
               <fromDir>${project.basedir}/target</fromDir>
               <includes>*.zip,*.zip.asc</includes>
               <excludes>pom.xml</excludes>
-              <url>scp://www.silverpeas.org</url>
+              <url>scp://${scp.user}@www.silverpeas.org</url>
               <toDir>/var/www/files</toDir>
               <optimize>true</optimize>
             </configuration>
@@ -121,14 +138,53 @@
           <dependency>
             <groupId>org.apache.maven.wagon</groupId>
             <artifactId>wagon-ssh</artifactId>
-            <version>${wagon.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.46</version>
+            <version>3.0.0</version>
           </dependency>
         </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.finalName}.zip</file>
+                  <type>zip</type>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <configuration>
+          <keyname>${gpg.keyname}</keyname>
+          <passphraseServerId>${gpg.keyname}</passphraseServerId>
+          <gpgArguments>
+            <arg>-a</arg>
+            <arg>-b</arg>
+          </gpgArguments>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
