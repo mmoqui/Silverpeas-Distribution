@@ -1,0 +1,16 @@
+#
+# Change the values of some of the HTTP response headers in order to avoid an attacked to identify
+# easily the application server or the web server that motorized Silverpeas.
+#
+
+/subsystem=undertow/configuration=filter/response-header=server-header:write-attribute(name=header-value,value="Silverpeas ${SILVERPEAS_VERSION}")
+/subsystem=undertow/configuration=filter/response-header=x-powered-by-header:write-attribute(name=header-value,value="Silverpeas")
+
+#
+# Remove the default welcome content at root path
+#
+
+/subsystem=undertow/server=default-server/host=default-host/location=\/:remove
+
+
+

@@ -64,6 +64,7 @@ silversetup {
     defaultLevel = project.logLevel
     scriptTasks = ['assemble', 'configure', 'install']
   }
+  silverpeasVersion = "${project.version}"
 }
 
 /**

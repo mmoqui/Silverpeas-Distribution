@@ -1,5 +1,6 @@
 #
 # Change the maximum size of an HTTP request Undertow can read
+# (Set this size at 100Gb maximum; unlimited isn't more supported by Wildfly >= 11)
 #
 
 if (result != 107374182400L) of /subsystem=undertow/server=default-server/http-listener=default:read-attribute(name=max-post-size)
