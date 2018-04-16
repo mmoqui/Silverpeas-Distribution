@@ -124,7 +124,7 @@
     </configfile>
 
     <configfile name="workflow/engine/schedulerSettings.properties">
-      <parameter key="timeoutSchedule">* 0,4,8,12,16,20 * * *</parameter>
+      <parameter key="timeoutSchedule">0 * * * *</parameter>
     </configfile>
 
   </fileset>
