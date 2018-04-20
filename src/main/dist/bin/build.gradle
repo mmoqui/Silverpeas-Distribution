@@ -1,13 +1,12 @@
 import groovy.xml.XmlUtil
-import org.silverpeas.setup.api.Logger
-import org.silverpeas.setup.configuration.JBossServer
+import org.gradle.util.GFileUtils
+import org.silverpeas.setup.api.FileLogger
+import org.silverpeas.setup.api.JBossServer
+import org.silverpeas.setup.construction.SilverpeasBuilder
+import static org.silverpeas.setup.construction.SilverpeasConstructionTask.SILVERPEAS_WAR
+import static org.silverpeas.setup.SilverpeasSetupPlugin.JBOSS_OUTPUT_LOG
 
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.util.regex.Matcher
-import java.util.regex.Pattern
-
-description = 'Distribution of Silverpeas. Its aim is to setup and to execute a Silverpeas installation'
+description = 'Distribution of Silverpeas. Its aim is to make, to setup and to execute a Silverpeas installation'
 group = 'org.silverpeas'
 
 apply from: "${System.getenv('SILVERPEAS_HOME')}/bin/silverpeas.gradle"
@@ -53,292 +52,29 @@ buildscript {
 }
 
 /**
- * Some configuration properties corresponding to this distribution.
+ * Configuration properties of the Silverpeas Setup Gradle plugin, required to make, to configure
+ * and to install Silverpeas
  */
 silversetup {
-  driversDir = "${buildDir}/drivers"
   // mode for developers only (be caution: don't use this mode in production environment).
   developmentMode = (System.getenv('SILVERPEAS_DEV_MODE') != null ? System.getenv('SILVERPEAS_DEV_MODE') as boolean : false)
+  if (developmentMode && System.getenv('SILVERPEAS_DIST_DIR') != null) {
+    distDir = file(System.getenv('SILVERPEAS_DIST_DIR'))
+  }
   logging {
-    logDir = "${project.silversetup.silverpeasHome}/log"
+    logDir = file("${project.silversetup.silverpeasHome.path}/log")
     defaultLevel = project.logLevel
-    scriptTasks = ['assemble', 'configure', 'install']
   }
   silverpeasVersion = "${project.version}"
+  silverpeasBundles = project.configurations.silverpeas
+  tiersBundles = project.configurations.library
 }
 
 /**
  * Global project properties.
  */
 project.ext {
-  distDir = (System.getenv('SILVERPEAS_DIST_DIR') != null ?
-      new File(System.getenv('SILVERPEAS_DIST_DIR')):new File('dist', buildDir))
-  deploymentsHome = new File("${project.silversetup.silverpeasHome}/deployments")
-  jbossOutputLog = new File("${project.silversetup.logging.logDir}/jboss_output.log")
-}
-
-/**
- * Generates the final WAR archive of the Silverpeas platform.
- * @param log The logger to use while generating the WAR archive.
- */
-def generateSilverpeasFinalWar(Logger log) {
-  // merge all of the web.xml from the different WARs into a single one
-  log.info "Merge all the web.xml into a single one"
-  def mainWebXmlFileName = "web-silverpeas-core-war-''${project.version}.war.xml"
-  def mainWebXmlFile = new File("${project.ext.distDir.path}/WEB-INF/${mainWebXmlFileName}")
-  def mainWebXml = new XmlSlurper(false, false).parse(mainWebXmlFile)
-  new File('WEB-INF', project.ext.distDir).listFiles(new FilenameFilter() {
-    boolean accept(File f, String fileName) {
-      return fileName.startsWith('web-') && fileName.endsWith('war.xml') &&
-          fileName != mainWebXmlFileName
-    }
-  }).each {
-    // the sub-elements of the web-app elements can be in the arbitrary order.
-    def aWebXml = new XmlSlurper(false, false).parse(it)
-    aWebXml.'context-param'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'filter'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'filter-mapping'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'listener'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'servlet'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'servlet-mapping'.each { elt -> mainWebXml.appendNode(elt) }
-    aWebXml.'resource-env-ref'.each { elt -> mainWebXml.appendNode(elt) }
-    GFileUtils.forceDelete(it)
-  }
-  XmlUtil.serialize(mainWebXml, new FileWriter("${project.ext.distDir.path}/WEB-INF/web.xml"))
-  GFileUtils.forceDelete(mainWebXmlFile)
-
-  // generate the final persistence.xml in which each Silverpeas components are referenced as a
-  // JPA entities provider
-  log.info "Update the persistence.xml with all the providers of JPA entities"
-  File xmlPersistenceFile = new File('WEB-INF/classes/META-INF/persistence.xml', project.ext.distDir)
-  def persistence = new XmlSlurper(false, false).parse(xmlPersistenceFile)
-  new File('WEB-INF/lib', project.ext.distDir).list(new FilenameFilter() {
-    @Override
-    boolean accept(final File dir, final String name) {
-      return name.endsWith("''${project.version}.jar")
-    }
-  }).each { jpaComponent ->
-    persistence.'persistence-unit'.'jta-data-source' + {
-      'jar-file'("lib/${jpaComponent}")
-    }
-  }
-  XmlUtil.serialize(persistence, new FileWriter(xmlPersistenceFile.path))
-
-  if (!silversetup.developmentMode) {
-    log.info "Generate silverpeas.war"
-    ant.zip(destfile: "${buildDir.path}/silverpeas.war") {
-      fileset(dir: project.ext.distDir.path)
-    }
-  } else {
-    log.info "silverpeas exploded war done"
-  }
-}
-
-/**
- * Cleans all the artifacts produced by the build of a Silverpeas distribution.
- */
-clean {
-  doFirst {
-    JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-        .redirectOutputTo(project.ext.jbossOutputLog)
-    if (jboss.isStartingOrRunning()) {
-      print 'WARNING: JBoss is running, stop it...'
-      jboss.stop()
-      println ' done'
-    }
-  }
-  doLast {
-    ant.delete(dir: project.ext.distDir.path, includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/log", includes: 'build*.log jboss_output.log')
-    ant.delete(dir: "${silversetup.silverpeasHome}/deployments", includes: '*')
-    ant.delete(dir: "${silversetup.silverpeasHome}/silvertrace", includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/migrations", includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/dbRepository", includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/resources/StringTemplates", includeemptydirs: true)
-    ant.delete(dir: "${silversetup.silverpeasHome}/properties", includeemptydirs: true,
-        excludes: 'org/silverpeas/authentication/**/* org/silverpeas/domains/**/* org/silverpeas/util/viewGenerator/settings/**/*')
-    ant.delete(dir: "${silversetup.silverpeasHome}/xmlcomponents", includeemptydirs: true,
-        excludes: 'workflows/**/*')
-  }
-}
-
-/**
- * Fetches the different parts of Silverpeas as well their dependencies from the remote Silverpeas
- * repository and prepares the build of the Silverpeas distribution. It is during this step the
- * Silverpeas platform is assembled.
- */
-assemble {
-  outputs.upToDateWhen {
-    boolean ok = project.ext.distDir.exists() &&
-        Files.exists(Paths.get(silversetup.driversDir))
-    if (!silversetup.developmentMode) {
-      ok = ok && Files.exists(Paths.get(buildDir.path, 'silverpeas.war'))
-    }
-    return ok
-  }
-  Logger log = Logger.getLogger('assemble')
-  doFirst {
-    // fetch all the artifacts and explode some of them into the output directories
-    Pattern pattern = ~/([a-zA-Z_\-]+)(-[0-9.]+[a-zA-Z0-9_\-.]*)(\.\w+)/
-    def artifacts = configurations.silverpeas.files
-
-    // explode first the silverpeas core war so that other wars can be overwritten some of its
-    // files (required by some looks)
-    def silverpeasWar = artifacts.find { it.name.startsWith('silverpeas-core-war-') }
-    log.info "Explode ${silverpeasWar.name} into ${project.ext.distDir.path}"
-    copy {
-      from(zipTree(silverpeasWar)) {
-        rename 'web.xml', "web-${silverpeasWar.name}.xml"
-      }
-      into project.ext.distDir.path
-    }
-
-    artifacts.each { a ->
-      if (a.name.endsWith('.war') && !a.name.startsWith('silverpeas-core-war-')) {
-        log.info "Explode ${a.name} into ${project.ext.distDir.path}"
-        copy {
-          from(zipTree(a)) {
-            rename 'web.xml', "web-${a.name}.xml"
-            exclude 'WEB-INF/classes/META-INF/MANIFEST.MF'
-          }
-          into project.ext.distDir.path
-        }
-      } else if (a.name.matches(/^.*-configuration-[\d.]+(-\w+\d+)?.jar$/) ||
-          (a.name.matches(/^.*-configuration-.*.jar$/) && silversetup.developmentMode)) {
-        // SNAPSHOT or any kind of configuration jars are taken in charge only in development mode
-        log.info "Explode ${a.name} into ${project.silversetup.silverpeasHome}"
-        copy {
-          from(zipTree(a))
-          exclude '**/META-INF/**'
-          into project.silversetup.silverpeasHome
-        }
-      } else if (a.name.startsWith('postgresql') || a.name.startsWith('jtds') ||
-          a.name.startsWith('ojdbc')) {
-        log.info "JDBC driver found: ${a.name}"
-        // h2 is already provided by JBoss >= 8
-        copy {
-          from(file(a)) {
-            String nameWithoutVersion = a.name
-            Matcher matching = pattern.matcher(a.name)
-            matching.each {
-              nameWithoutVersion = it[1] + it[3]
-            }
-            rename a.name, nameWithoutVersion
-          }
-          into project.silversetup.driversDir
-        }
-      } else if (a.name.endsWith('.rar')) {
-        log.info "JCA found: ${a.name}"
-        copy {
-          from(file(a)) {
-            String nameWithoutVersion = a.name
-            Matcher matching = pattern.matcher(a.name)
-            matching.each {
-              nameWithoutVersion = it[1] + it[3]
-            }
-            rename a.name, nameWithoutVersion
-          }
-          into buildDir
-        }
-      }
-    }
-
-    artifacts = configurations.library.files
-    artifacts.each { a ->
-      if (a.name.endsWith('.jar')) {
-        if (a.name.startsWith('postgresql') || a.name.startsWith('jtds') ||
-            a.name.startsWith('ojdbc')) {
-          log.info "JDBC driver found: ${a.name}"
-          // h2 is already provided by JBoss >= 8
-          copy {
-            from(file(a)) {
-              String nameWithoutVersion = a.name
-              Matcher matching = pattern.matcher(a.name)
-              matching.each {
-                nameWithoutVersion = it[1] + it[3]
-              }
-              rename a.name, nameWithoutVersion
-            }
-            into project.silversetup.driversDir
-          }
-        } else {
-          String jartype = a.name.toLowerCase().indexOf('silverpeas') >= 0 ? 'Silverpeas':'Tiers'
-          log.info "${jartype} JAR library found: ${a.name}"
-          copy {
-            from file(a)
-            into new File(project.ext.distDir.path, 'WEB-INF/lib')
-          }
-        }
-      }
-    }
-  }
-  doLast {
-    generateSilverpeasFinalWar(log)
-  }
-}
-
-/**
- * Configures both the runtime (JBoss) and the Silverpeas distribution.
- * It depends on the assemble task (assemble will be performed first).
- */
-task configure(dependsOn: assemble) {
-  description 'Configures both JBoss and Silverpeas'
-  group 'Build'
-  Logger log = Logger.getLogger('configure')
-  doLast {
-    tasks.configureJBoss.execute()
-    tasks.configureSilverpeas.execute()
-  }
-}
-
-/**
- * Installs Silverpeas and its dependencies into Wildfly/JBoss.
- * It depends both of the configuration and of the migration tasks, meaning they will be first
- * performed. (The migration task is provided by the silverpeas-setup plugin).
- * The installation, as well as the configuration task
- */
-task install(dependsOn: [configure, migration]) {
-  description 'Installs Silverpeas into JBoss/Wildfly'
-  group 'Build'
-  Logger log = Logger.getLogger('install')
-  JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
-      .redirectOutputTo(project.ext.jbossOutputLog)
-      .useLogger(log)
-  doFirst {
-    if (jboss.isStartingOrRunning()) {
-      jboss.stop()
-    }
-    jboss.start(adminOnly: true)
-  }
-  doLast {
-    copy {
-      from(fileTree(buildDir))
-      include '*.rar'
-      include '*.jar'
-      include '*.war'
-      into project.ext.deploymentsHome
-    }
-    try {
-      project.ext.deploymentsHome.listFiles().sort().each { artifact ->
-        log.info "(Re)Installation of ${artifact.name}"
-        jboss.remove(artifact.name)
-        jboss.add(artifact.path)
-        jboss.deploy(artifact.name)
-        log.info "(Re)Installation of ${artifact.name}: [OK]"
-      }
-      if (silversetup.developmentMode) {
-        log.info '(Re)Installation of silverpeas.war as exploded (dev mode)'
-        jboss.remove('silverpeas.war')
-        jboss.add(project.ext.distDir.path, 'silverpeas.war')
-        jboss.deploy('silverpeas.war')
-        log.info '(Re)Installation of silverpeas.war as exploded (dev mode): [OK]'
-      }
-    } catch (RuntimeException ex) {
-      throw new GradleScriptException("Installation Failure", ex)
-    } finally {
-      jboss.stop()
-    }
-  }
+  jbossOutputLog =  project.file("${project.silversetup.logging.logDir.path}/${JBOSS_OUTPUT_LOG}")
 }
 
 /**
@@ -348,12 +84,12 @@ task install(dependsOn: [configure, migration]) {
 task redeploy {
   description 'Redeploy all the artifacts in the SILVERPEAS_HOME/deployments folder'
   group 'Silverpeas'
-  onlyIf { project.ext.deploymentsHome.exists() }
-  JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
+  onlyIf { project.silversetup.deploymentDir.exists() }
+  JBossServer jboss = new JBossServer(project.silversetup.jbossHome.path)
       .redirectOutputTo(project.ext.jbossOutputLog)
   doFirst {
     jboss.doWhenRunning {
-      project.ext.deploymentsHome.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
+      project.silversetup.deploymentDir.listFiles().sort { a, b -> b.name <=> a.name }.each { artifact ->
         println "Undeploy ${artifact.name}..."
         jboss.undeploy(artifact.name)
       }
@@ -361,7 +97,7 @@ task redeploy {
   }
   doLast {
     try {
-      project.ext.deploymentsHome.listFiles().sort().each { artifact ->
+      project.silversetup.deploymentDir.listFiles().sort().each { artifact ->
         println "Deploy ${artifact.name}..."
         jboss.deploy(artifact.path)
       }
@@ -378,7 +114,7 @@ task start {
   description 'Starts Silverpeas'
   group 'Silverpeas'
   doLast {
-    new JBossServer(project.silversetup.jbossHome)
+    new JBossServer(project.silversetup.jbossHome.path)
         .redirectOutputTo(project.ext.jbossOutputLog)
         .start()
   }
@@ -392,7 +128,7 @@ task debug {
   group 'Silverpeas'
   doLast {
     int port = (project.ext.has('port') ? project.ext.port as int:5005)
-    new JBossServer(project.silversetup.jbossHome)
+    new JBossServer(project.silversetup.jbossHome.path)
         .redirectOutputTo(project.ext.jbossOutputLog)
         .debug(port)
   }
@@ -405,7 +141,7 @@ task stop {
   description 'Stops Silverpeas'
   group 'Silverpeas'
   doLast {
-    new JBossServer(project.silversetup.jbossHome)
+    new JBossServer(project.silversetup.jbossHome.path)
         .redirectOutputTo(project.ext.jbossOutputLog)
         .stop()
   }
@@ -418,7 +154,7 @@ task status {
   description 'Checks the status of Silverpeas: is it running? is it well configured?'
   group 'Silverpeas'
   doLast {
-    def jboss = new JBossServer(project.silversetup.jbossHome)
+    def jboss = new JBossServer(project.silversetup.jbossHome.path)
     String configurationStatus = (jboss.isAlreadyConfigured() ? 'Configured: [OK]' : 'Configured: [NOK]')
     String executionStatus = (jboss.isRunning() ? 'Running:    [OK]' : 'Running:    [NOK]')
     String deploymentStatus = (jboss.isRunning() && jboss.isDeployed('silverpeas.war') ? 'Active:     [OK]' : 'Active:     [NOK]')
@@ -436,41 +172,37 @@ task reload {
   description 'Reassembles the Silverpeas war application and deploys it again while JBoss/Wildfly is running (only in dev mode)'
   group 'Silverpeas Development'
   onlyIf { silversetup.developmentMode }
-  Logger log = Logger.getLogger('reload')
-  JBossServer jboss = new JBossServer(project.silversetup.jbossHome)
+  FileLogger log = FileLogger.getLogger('reload')
+  JBossServer jboss = new JBossServer(project.silversetup.jbossHome.path)
       .redirectOutputTo(project.ext.jbossOutputLog)
       .useLogger(log)
   doFirst {
-    log.info 'Undeploy silverpeas.war...'
-    jboss.undeploy('silverpeas.war')
+    log.info "Undeploy ${SILVERPEAS_WAR}..."
+    jboss.undeploy(SILVERPEAS_WAR)
     // deletes the Silverpeas distribution directory
-    ant.delete(dir: project.ext.distDir.path, includeemptydirs: true)
+    ant.delete(dir: project.silversetup.distDir.path, includeemptydirs: true)
   }
   doLast {
     // disassembles each war that made Silverpeas
     def artifacts = configurations.silverpeas.files
-    artifacts.each { a ->
-      if (a.name.endsWith('.war')) {
-        log.info "Explode ${a.name} into ${project.ext.distDir.path}"
-        copy {
-          from(zipTree(a)) {
-            rename 'web.xml', "web-${a.name}.xml"
-          }
-          into project.ext.distDir.path
-        }
+    SilverpeasBuilder builder = new SilverpeasBuilder(project, log)
+    builder.silverpeasHome = project.silversetup.silverpeasHome
+    builder.developmentMode = project.silversetup.developmentMode
+
+    File silverpeasWar = builder.findSilverpeasCoreWarBundle(artifacts)
+    builder.extractWarBundle(silverpeasWar, project.silversetup.distDir)
+    artifacts.each {
+      if (it.name.endsWith('.war') && it.name != silverpeasWar.name) {
+        builder.extractWarBundle(it, project.silversetup.distDir)
       }
     }
-    generateSilverpeasFinalWar(log)
+    builder.generateSilverpeasApplication(project.silversetup.distDir)
 
     try {
-      log.info 'Deploy silverpeas.war...'
-      jboss.deploy('silverpeas.war')
+      log.info "Deploy ${SILVERPEAS_WAR}..."
+      jboss.deploy(SILVERPEAS_WAR)
     } catch (RuntimeException ex) {
       throw new GradleScriptException("Reload Failure", ex)
     }
   }
 }
-
-
-
-
