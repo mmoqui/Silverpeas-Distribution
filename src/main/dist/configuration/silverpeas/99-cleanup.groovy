@@ -10,7 +10,8 @@ import groovy.sql.Sql
  * Silverpeas 6.0.0 until the backend of the Calendar Engine v1 is stable enough.
  */
 
-if (settings.DEV_CLEANUP_CALENDAR) {
+boolean cleanUp = settings.DEV_CLEANUP_CALENDAR == null ? false : settings.DEV_CLEANUP_CALENDAR.toBoolean()
+if (cleanUp) {
   log.info 'Clean up all the tables relative to the Silverpeas Calendar Engine'
 
   Sql sql = service.sql
