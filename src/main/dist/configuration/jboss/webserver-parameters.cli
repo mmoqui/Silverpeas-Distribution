@@ -10,7 +10,9 @@
 # Remove the default welcome content at root path
 #
 
-/subsystem=undertow/server=default-server/host=default-host/location=\/:remove
+if (outcome == success) of /subsystem=undertow/server=default-server/host=default-host/location=\/:read-resource
+  /subsystem=undertow/server=default-server/host=default-host/location=\/:remove
+end-if
 
 
 
