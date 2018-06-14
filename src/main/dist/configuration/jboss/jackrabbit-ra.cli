@@ -2,6 +2,8 @@
 # Configure the Jackrabbit JCA to bootstrap a JCR repository for Silverpeas
 #
 
+echo Configure the Jackrabbit JCA to bootstrap a JCR repository for Silverpeas
+
 if (outcome != success) of /subsystem=resource-adapters/resource-adapter=jackrabbit-jca.rar:read-resource
 
   /subsystem=jca/archive-validation=archive-validation:write-attribute(name=enabled, value=false)

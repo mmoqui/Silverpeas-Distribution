@@ -4,5 +4,7 @@
 # cannot be canceled by the triggering of a transaction timeout.
 #
 
+echo Change the default value of the transactions' timeout
+
 /subsystem=transactions:write-attribute(name=default-timeout,value=${DB_JTA_TIMEOUT})
 

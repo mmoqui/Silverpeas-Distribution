@@ -3,8 +3,14 @@
 # easily the application server or the web server that motorized Silverpeas.
 #
 
-/subsystem=undertow/configuration=filter/response-header=server-header:write-attribute(name=header-value,value="Silverpeas ${SILVERPEAS_VERSION}")
-/subsystem=undertow/configuration=filter/response-header=x-powered-by-header:write-attribute(name=header-value,value="Silverpeas")
+echo Change some web server paramaters
+
+if (outcome != success) of /subsystem=undertow/configuration=filter/response-header=server-header:read-resource
+  /subsystem=undertow/configuration=filter/response-header=server-header:add(header-name=Silverpeas ${SILVERPEAS_VERSION}, header-value=Silverpeas)
+else
+  /subsystem=undertow/configuration=filter/response-header=server-header:write-attribute(name=header-value,value=Silverpeas ${SILVERPEAS_VERSION})
+  /subsystem=undertow/configuration=filter/response-header=x-powered-by-header:write-attribute(name=header-value,value=Silverpeas)
+end-if
 
 #
 # Remove the default welcome content at root path

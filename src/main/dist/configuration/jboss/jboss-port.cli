@@ -2,6 +2,8 @@
 # Change the HTTP port at which JBoss/Wildfly listens
 #
 
+echo Change the HTTP port
+
 /socket-binding-group=standard-sockets/socket-binding=http:write-attribute(name=port, value=${SERVER_PORT})
 
 # /socket-binding-group=standard-sockets/socket-binding=https:write-attribute(name=port, value=8443)

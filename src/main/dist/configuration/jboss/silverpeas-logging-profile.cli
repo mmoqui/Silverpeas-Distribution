@@ -2,6 +2,8 @@
 # Define a peculiar logging profile for Silverpeas in JBoss/Wildfly
 #
 
+echo Define a peculiar logging profile for Silverpeas
+
 if (outcome == success) of /subsystem=logging/logging-profile=silverpeas:read-resource
   /subsystem=logging/logging-profile=silverpeas:remove
 end-if

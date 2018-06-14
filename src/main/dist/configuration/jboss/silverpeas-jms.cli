@@ -2,6 +2,8 @@
 # Add JMS queues and topics used by Silverpeas
 #
 
+echo Add JMS queues and topics used by Silverpeas
+
 #
 # JMS queues definition
 #
