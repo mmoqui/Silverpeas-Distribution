@@ -14,7 +14,6 @@ data-source add \
   --driver-name=${DB_DRIVER_NAME} \
   --connection-url=${JCR_URL} \
   --jndi-name=java:/datasources/DocumentStore \
-  --jta=false \
   --use-java-context=true \
   --user-name=${JCR_USER} \
   --password=${JCR_PASSWORD} \

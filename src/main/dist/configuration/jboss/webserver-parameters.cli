@@ -3,12 +3,19 @@
 # easily the application server or the web server that motorized Silverpeas.
 #
 
-echo Change some web server paramaters
+echo Change some web server parameters
 
+echo ... set the Server header in HTTP responses
 if (outcome != success) of /subsystem=undertow/configuration=filter/response-header=server-header:read-resource
-  /subsystem=undertow/configuration=filter/response-header=server-header:add(header-name=Silverpeas ${SILVERPEAS_VERSION}, header-value=Silverpeas)
+  /subsystem=undertow/configuration=filter/response-header=server-header:add(header-name=Server, header-value=Silverpeas ${SILVERPEAS_VERSION})
 else
   /subsystem=undertow/configuration=filter/response-header=server-header:write-attribute(name=header-value,value=Silverpeas ${SILVERPEAS_VERSION})
+end-if
+
+echo ... set the X-Powered-By header in HTTP responses
+if (outcome != success) of /subsystem=undertow/configuration=filter/response-header=x-powered-by-header:read-resource
+  /subsystem=undertow/configuration=filter/response-header=x-powered-by-header:add(header-name=X-Powered-By, header-value=Silverpeas)
+else
   /subsystem=undertow/configuration=filter/response-header=x-powered-by-header:write-attribute(name=header-value,value=Silverpeas)
 end-if
 
@@ -16,6 +23,7 @@ end-if
 # Remove the default welcome content at root path
 #
 
+echo ... remove the welcome content at root path
 if (outcome == success) of /subsystem=undertow/server=default-server/host=default-host/location=\/:read-resource
   /subsystem=undertow/server=default-server/host=default-host/location=\/:remove
 end-if
