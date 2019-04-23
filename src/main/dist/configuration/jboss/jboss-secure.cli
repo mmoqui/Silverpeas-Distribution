@@ -1,0 +1,15 @@
+echo Secure Wildfly (is wildfly after a secured reverse proxy?): ${SERVER_SECURED}
+
+if (outcome == failed) of /subsystem=undertow/servlet-container=default/setting=session-cookie:add(http-only=true,secure=${SERVER_SECURED})
+    /subsystem=undertow/servlet-container=default/setting=session-cookie:write-attribute(name=secure,value=${SERVER_SECURED})
+end-if
+
+if (result == true) of /subsystem=undertow/servlet-container=default/setting=session-cookie:read-attribute(name=secure)
+    /subsystem=undertow/server=default-server/http-listener=default:undefine-attribute(name=redirect-socket)
+    /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=proxy-address-forwarding,value=true)
+else
+    /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=proxy-address-forwarding,value=false)
+    /subsystem=undertow/server=default-server/http-listener=default:write-attribute(name=redirect-socket,value=https)
+end-if
+
+
