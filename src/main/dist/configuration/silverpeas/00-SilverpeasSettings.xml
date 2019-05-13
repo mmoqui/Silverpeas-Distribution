@@ -119,6 +119,10 @@
       <parameter key="IsToolsVisible">true</parameter>
     </configfile>
 
+    <config name="jobDomainPeas/settings/jobDomainPeasSettings.properties">
+      <parameter key="admin.profile.rights.copyReplace.activated">true</parameter>
+    </config>
+
     <configfile name="workflow/engine/settings.properties">
       <parameter key="ProcessModelDir">${SILVERPEAS_DATA_HOME}/workflowRepository/</parameter>
     </configfile>
