@@ -61,47 +61,17 @@
       <parameter key="database.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
-    <configfile name="domains/domainMSAD.properties">
-      <parameter key="database.LDAPHost">${LDAP_SERVER}</parameter>
-      <parameter key="database.LDAPPort">${LDAP_PORT}</parameter>
-    </configfile>
-
-    <configfile name="domains/domainOpenDJ.properties">
-      <parameter key="database.LDAPHost">${LDAP_SERVER}</parameter>
-      <parameter key="database.LDAPPort">${LDAP_PORT}</parameter>
-    </configfile>
-
     <configfile name="authentication/domains.properties">
       <parameter key="SQLDomainDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="authentication/autDomainSP.properties">
-      <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
       <parameter key="autServer0.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
       <parameter key="autServer1.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
     </configfile>
 
     <configfile name="authentication/autDomainSQL.properties">
-      <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
       <parameter key="autServer0.SQLDataSourceJNDIName">${DB_DATASOURCE_JNDI}</parameter>
-    </configfile>
-
-    <configfile name="authentication/autDomainLDAP.properties">
-      <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
-      <parameter key="autServer0.LDAPHost">${LDAP_SERVER}</parameter>
-      <parameter key="autServer0.LDAPPort">${LDAP_PORT}</parameter>
-    </configfile>
-
-    <configfile name="authentication/autDomainMSAD.properties">
-      <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
-      <parameter key="autServer0.LDAPHost">${LDAP_SERVER}</parameter>
-      <parameter key="autServer0.LDAPPort">${LDAP_PORT}</parameter>
-    </configfile>
-
-    <configfile name="authentication/autDomainOpenDJ.properties">
-      <parameter key="fallbackType">${FALLBACK_TYPE}</parameter>
-      <parameter key="autServer0.LDAPHost">${LDAP_SERVER}</parameter>
-      <parameter key="autServer0.LDAPPort">${LDAP_PORT}</parameter>
     </configfile>
 
     <configfile name="notificationserver/channel/smtp/smtpSettings.properties">
